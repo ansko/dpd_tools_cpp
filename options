@@ -1,0 +1,34 @@
+# Geometrical size of the cell
+lx 90
+ly 80
+lz 65
+# Thickness of MMT platelet in Angstoms
+mmt_real_thickness 8
+# Number of soft atoms in the system studied by means of MD
+md_soft_atoms 41940
+# Ratio box_size / MMT_size
+planar_expansion_coeff 2
+# Radius of MMT platelet in beads
+platelet_radius 4
+# Length of the modifier tail in beads
+tail_length 2
+# Charge of the modifier head and of MMT substituted atoms
+bead_charge 1
+# Number of platelets in the stack
+stacking 4
+# Polymer length in monomer (or in beads because 1 monomer == 1 bead)
+polymerization 10
+# Interlayer space in the MMT stack in Angstroms
+real_interlayer 8
+# DPD density
+dpd_rho 3
+# Bead radius in the lj units
+lj_bead_radius 1
+# Types of beads and bonds
+mmt_atom_type 1
+mmt_edge_bond_type 1
+mmt_diagonal_bond_type 2
+modifier_head_atom_type 2
+modifier_tail_atom_type 3
+head_tail_type 3
+tail_tail_type 4

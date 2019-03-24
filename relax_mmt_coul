@@ -1,0 +1,30 @@
+# Test created structure of MMT
+
+units         lj
+comm_modify   vel yes
+newton        on
+special_bonds lj/coul 1 1 1
+atom_style    full
+bond_style    harmonic
+neighbor      3 bin
+neigh_modify  delay 0 every 1 check no page 500000 one 50000
+read_data     mmt_test.data
+mass * 1
+
+variable      dpdgamma   equal 5       # gamma from F_d
+variable      pairradius equal 7      # cutoff for LJ (if set) and Coulomb
+variable      dpdradius  equal 1.72     # r_c from F_c
+variable      naradius   equal 1.22    # vdW radius of Na
+variable      dpdcutoff  equal 2.0
+
+pair_style    hybrid/overlay coul/cut ${pairradius} dpd 1 ${dpdcutoff} 419084618
+pair_coeff    1 1 dpd 0  ${dpdgamma} # clay - clay
+pair_coeff    * * coul/cut
+bond_coeff    1 1000 2                   # clay bonds: edge and
+bond_coeff    2 1000 3.4641016151377544  # diagonal
+thermo        10
+thermo_style  custom step density press pe ebond ecoul evdwl lz vol
+dump          d1 all image 1000 charged/*.jpg type type view 90 0
+timestep      0.01
+fix           1 all npt x 0 10 10000 y 0 10 10000 z 0 10 10000 temp 1 1 10000
+run 10000
