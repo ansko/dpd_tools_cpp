@@ -23,6 +23,8 @@ public:
     size_t modifier_tail_atom_type;
     size_t head_tail_type;
     size_t tail_tail_type;
+    size_t polymer_atom_type;
+    size_t polymer_bond_type;
     float lx;
     float ly;
     float lz;
@@ -32,6 +34,10 @@ public:
     float real_interlayer;
     float dpd_rho;
     float lj_bead_radius;
+    float too_close_threshold;
+    float modifier_head_tail_bond_length;
+    float modifier_tail_tail_bond_length;
+    float polymer_bond_length;
 
     Options(std::string options_fname)
       {
@@ -81,6 +87,18 @@ public:
                 ofs >> this->head_tail_type;
             else if (option_name == "tail_tail_type")
                 ofs >> this->tail_tail_type;
+            else if (option_name == "too_close_threshold")
+                ofs >> this->too_close_threshold;
+            else if (option_name == "modifier_head_tail_bond_length")
+                ofs >> this->modifier_head_tail_bond_length;
+            else if (option_name == "modifier_tail_tail_bond_length")
+                ofs >> this->modifier_tail_tail_bond_length;
+            else if (option_name == "polymer_bond_length")
+                ofs >> this->polymer_bond_length;
+            else if (option_name == "polymer_atom_type")
+                ofs >> this->polymer_atom_type;
+            else if (option_name == "polymer_bond_type")
+                ofs >> this->polymer_bond_type;
           }
       };
 
@@ -189,6 +207,38 @@ public:
         std::cout << "tail_tail_type = " << this->tail_tail_type;
         if (verbose)
             std::cout << " Type of modifier tail-tail bond\n";
+        else
+            std::cout << std::endl;
+        std::cout << "too_close_threshold = " << this->too_close_threshold;
+        if (verbose)
+            std::cout << " Threshold when beads are too close\n";
+        else
+            std::cout << std::endl;
+        std::cout << "modifier_head_tail_bond_length = "
+            << this->modifier_head_tail_bond_length;
+        if (verbose)
+            std::cout << " Length of the bond between head and tail in modifier\n";
+        else
+            std::cout << std::endl;
+        std::cout << "modifier_tail_tail_bond_length = "
+            << this->modifier_tail_tail_bond_length;
+        if (verbose)
+            std::cout << " Length of the bond between tails in modifier\n";
+        else
+            std::cout << std::endl;
+        std::cout << "polymer_bond_length = " << this->polymer_bond_length;
+        if (verbose)
+            std::cout << " Length of the bond in polymer\n";
+        else
+            std::cout << std::endl;
+        std::cout << "polymer_atom_type = "  << this->polymer_atom_type;
+        if (verbose)
+            std::cout << " Type of all atoms in polymer\n";
+        else
+            std::cout << std::endl;
+        std::cout << "polymer_bond_type = "  << this->polymer_bond_type;
+        if (verbose)
+            std::cout << " Type of all bonds in polymer\n";
         else
             std::cout << std::endl;
       }

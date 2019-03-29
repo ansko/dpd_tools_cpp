@@ -93,22 +93,16 @@ int main()
     float dz = lj_interlayer / 2 + 2 * o.lj_bead_radius;
     if (o.stacking % 2 != 0)
       {
-        bool status = s.add_mmt_circular(o.platelet_radius, o.lj_bead_radius,
-            o.mmt_atom_type, o.mmt_edge_bond_type, o.mmt_diagonal_bond_type,
-            0, 0, 0, 0, 0);
+        bool status = s.add_mmt_circular(o, 0, 0, 0, charged_count);
         dz = lj_interlayer + 4 * o.lj_bead_radius;
       }
     for (size_t idx = 0; idx < half_stacking; ++idx)
       {
-        bool status = s.add_mmt_circular(o.platelet_radius, o.lj_bead_radius,
-            o.mmt_atom_type, o.mmt_edge_bond_type, o.mmt_diagonal_bond_type,
-            0, 0, dz, 0, 0);
-        status = s.add_mmt_circular(o.platelet_radius, o.lj_bead_radius,
-            o.mmt_atom_type, o.mmt_edge_bond_type, o.mmt_diagonal_bond_type,
-            0, 0, -dz, 0, 0);
+        bool status = s.add_mmt_circular(o, 0, 0, dz, charged_count);
+        status = s.add_mmt_circular(o, 0, 0, -dz, charged_count);
         dz += lj_interlayer + 4 * o.lj_bead_radius;
       }
-
+    size_t mmt_atoms = s.atoms().size();
     #ifdef DEBUG
     std::cout << "**********\n";
     std::cout << "MMT addition:\n";
@@ -141,13 +135,13 @@ int main()
     size_t modifiers_done = 0;
     size_t modifiers_fails_done = 0;
     size_t modifiers_fails_allowed = charged_count;
-    while (modifiers_done < charged_count
+    while (modifiers_done < charged_count * o.stacking
         && modifiers_fails_done < modifiers_fails_allowed)
       {
         #ifdef DEBUG
         std::cout << "**********\n";
         std::cout << "Modifier addition: "
-                  <<  modifiers_done << " of " << charged_count
+                  <<  modifiers_done << " of " << charged_count * o.stacking
                   << "; fais: " << modifiers_fails_done
                   << " of " << modifiers_fails_allowed << "\n";
         std::cout << "**********\n";
@@ -155,10 +149,7 @@ int main()
         size_t idx = rand() % galleries.size();
         float bottom = galleries[idx].first;
         float top = galleries[idx].second;
-        bool status = s.add_modifier_gallery(o.bead_charge, o.tail_length,
-            o.modifier_head_atom_type, o.modifier_tail_atom_type,
-            o.head_tail_type, o.tail_tail_type, o.planar_expansion_coeff,
-            o.lj_bead_radius, top, bottom);
+        bool status = s.add_modifier_gallery(o, top, bottom);
         if (status)
           {
             modifiers_done++;
@@ -168,75 +159,65 @@ int main()
             modifiers_fails_done ++;
           }
       }
+    size_t modifier_atoms = s.atoms().size() - mmt_atoms;
+    #ifdef DEBUG
+    std::cout << "**********\n";
+    std::cout << "Modifier addition after all: "
+              <<  modifiers_done << " of " << charged_count
+              << "; fais: " << modifiers_fails_done
+              << " of " << modifiers_fails_allowed << "\n";
+    std::cout << "**********\n";
+    #endif
 
     write_data("mmt_mod_test.data", s);
 
+    size_t polymers_done = 0;
+    size_t polymers_fails_done = 0;
+    size_t polymers_fails_allowed = polymers_count * o.polymerization;
+    while (polymers_done < polymers_count
+        && polymers_fails_done < polymers_fails_allowed)
+      {
+        #ifdef DEBUG
+        std::cout << "**********\n";
+        std::cout << "Polymer addition: "
+                  <<  polymers_done << " of " << polymers_count
+                  << "; fais: " << polymers_fails_done
+                  << " of " << polymers_fails_allowed << "\n";
+        std::cout << "**********\n";
+        #endif
+        bool status = s.add_polymer(o);
+        if (status)
+          {
+            polymers_done++;
+          }
+        else
+          {
+            polymers_fails_done ++;
+          }
+      }
+    size_t polymer_atoms = s.atoms().size() - mmt_atoms - modifier_atoms;
+    #ifdef DEBUG
+    std::cout << "**********\n";
+    std::cout << "Polymers addition after all: "
+              <<  polymers_done << " of " << polymers_count
+              << "; fais: " << polymers_fails_done
+              << " of " << polymers_fails_allowed << "\n";
+    std::cout << "**********\n";
+    #endif
+
+    write_data("mmt_mod_poly_test.data", s);
+
+    std::cout << "Structure created:\n"
+        << "\tAtoms: " << s.atoms().size() << std::endl
+        << "\tBonds: " << s.bonds().size() << std::endl
+        << "\tBox side: " << cube_edge << std::endl
+        << "\tDPD_rho: " << s.atoms().size() / pow(cube_edge, 3) << std::endl;
+
+    std::cout << "MMT: 1 - " << mmt_atoms << std::endl
+        << "modifier: " << mmt_atoms + 1 << " - " << mmt_atoms + modifier_atoms
+        << std::endl
+        << "polymer: " << mmt_atoms + modifier_atoms + 1 << " - "
+            << mmt_atoms + modifier_atoms + polymer_atoms << std::endl;
+
     return 0;
 }
-/*
-def make_tactoid():
-    top = lj_interlayer/2
-    bottom = -lj_interlayer/2
-    #print('atoms in mmt', mmt_atoms_count)
-    modifiers_done = 0
-    fails_done = 0
-    fails_allowed = charged_count * 10
-    while modifiers_done < charged_count and fails_done < fails_allowed:
-        status, new_structure = between_clays(
-            top=top, bottom=bottom,
-            structure=structure,
-            head_charge=bead_charge,
-            tail_length=tail_length,
-            bead_radius=lj_bead_radius,
-            head_atom_type=2,
-            tail_atom_type=3,
-            head_tail_bond_type=3,
-            tail_tail_bond_type=4)
-        if status:
-            modifiers_done += 1
-            structure = new_structure
-        else:
-            fails_done += 1
-    print('Modifiers done after all:', modifiers_done)
-    print('charged', len(structure['atoms']))
-
-    polymers_done = 0
-    polymers_fails_done = 0
-    polymers_fails_allowed = 10000 #10 * polymers_count
-    while (polymers_done < polymers_count and
-        polymers_fails_done < polymers_fails_allowed):
-        old_structure = copy.deepcopy(structure)
-        if polymerization > 1:
-            status, new_structure = random_chain(
-                polymerization=polymerization,
-                bead_radius=lj_bead_radius,
-                atom_type=4,
-                bond_type=5,
-                start_atom_id=len(structure['atoms']) + 1,
-                start_bond_id=len(structure['bonds']) + 1,
-                structure=structure)
-        else:
-            status, new_structure = polymer_chain(
-                polymerization=polymerization,
-                bead_radius=bead_radius,
-                atom_type=4,
-                start_atom_id=len(structure['atoms']) + 1,
-                structure=structure)
-        if status:
-            structure = new_structure
-            polymers_done += 1
-            #if polymers_done % polymers_count // 10 == 0:
-        else:
-            structure = copy.deepcopy(old_structure)
-            polymers_fails_done += 1
-        print('polymers: {0}, fails: {1}/{2}'.format(
-            polymers_done, polymers_fails_done, polymers_fails_allowed))
-    print('Polymers done after all:', polymers_done)
-
-    # Summary
-    print('Structure:\n\t{0} atoms\n\t{1} bonds'.format(
-        len(structure['atoms']), len(structure['bonds'])))
-    print('Cell: volume={0}, dpd_density={1}'.format(
-        cube_edge**3, len(structure['atoms'])/cube_edge**3))
-    write_data('tactoid.data', structure)
-*/

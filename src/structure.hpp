@@ -73,24 +73,23 @@ public:
         return this->_bonds;
       }
 
-    bool add_mmt_circular(size_t platelet_radius, float bead_radius,
-        size_t atom_type, size_t bond_type_edge, size_t bond_type_diagonal,
-        float x=0, float y=0, float z=0,
-        size_t charged_count=0, float bead_charge=0)
+    bool add_mmt_circular(Options &o,
+        float x=0, float y=0, float z=0, size_t charged_count=0)
       {
         #ifdef DEBUG
         std::cout << "**********\n";
         std::cout << "Structure.hpp add_mmt_circular input parameters:\n";
-        std::cout << "platelet_radius = " << platelet_radius << std::endl;
-        std::cout << "bead_radius = " << bead_radius << std::endl;
-        std::cout << "atom_type = " << atom_type << std::endl;
-        std::cout << "bond_type_edge = " << bond_type_edge << std::endl;
-        std::cout << "bond_type_diagonal = " << bond_type_diagonal << std::endl;
+        std::cout << "platelet_radius = " << o.platelet_radius << std::endl;
+        std::cout << "bead_radius = " << o.lj_bead_radius << std::endl;
+        std::cout << "atom_type = " << o.mmt_atom_type << std::endl;
+        std::cout << "mmt_edge_bond_type = " << o.mmt_edge_bond_type << std::endl;
+        std::cout << "mmt_diagonal_bond_type = " << o.mmt_diagonal_bond_type
+            << std::endl;
         std::cout << "x = " << x << std::endl;
         std::cout << "y = " << y << std::endl;
         std::cout << "z = " << z << std::endl;
         std::cout << "charged_count = " << charged_count << std::endl;
-        std::cout << "bead_charge = " << bead_charge << std::endl;
+        std::cout << "bead_charge = " << o.bead_charge << std::endl;
         std::cout << "**********\n";
         #endif
         std::vector<Atom> new_atoms;
@@ -98,27 +97,28 @@ public:
         size_t new_idx = 1;
         // Add atoms and bonds top-bottom
         std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
-        for (int idxx = -(int)platelet_radius + 1; idxx < (int)platelet_radius;
+        for (int idxx = -(int)o.platelet_radius + 1; idxx < (int)o.platelet_radius;
             ++idxx)
           {
             atom_ids[idxx] = std::map<int, std::map<std::string, size_t> >();
-            float dx = idxx * 2 * bead_radius;
-            for (int idxy = -(int)platelet_radius + 1;
-                idxy < (int)platelet_radius; ++idxy)
+            float dx = idxx * 2 * o.lj_bead_radius;
+            for (int idxy = -(int)o.platelet_radius + 1;
+                idxy < (int)o.platelet_radius; ++idxy)
               {
-                if (pow(platelet_radius, 2) < pow(idxx, 2) + pow(idxy, 2))
+                if (pow(o.platelet_radius, 2) < pow(idxx, 2) + pow(idxy, 2))
                   {
                     continue;
                   }
                 atom_ids[idxx][idxy] = std::map<std::string, size_t>();
-                float dy = idxy * 2 * bead_radius;
-                new_atoms.push_back(Atom(x + dx, y + dy, z - bead_radius,
-                    0, atom_type, 0, 0, 0, "filler"));
+                float dy = idxy * 2 * o.lj_bead_radius;
+                new_atoms.push_back(Atom(x + dx, y + dy, z - o.lj_bead_radius,
+                    0, o.mmt_atom_type, 0, 0, 0, "filler"));
                 atom_ids[idxx][idxy]["bottom"] = new_idx;
-                new_atoms.push_back(Atom(x + dx, y + dy, z + bead_radius,
-                    0, atom_type, 0, 0, 0, "filler"));
+                new_atoms.push_back(Atom(x + dx, y + dy, z + o.lj_bead_radius,
+                    0, o.mmt_atom_type, 0, 0, 0, "filler"));
                 atom_ids[idxx][idxy]["top"] = new_idx + 1;
-                new_bonds.push_back(Bond(bond_type_edge, new_idx, new_idx + 1));
+                new_bonds.push_back(Bond(o.mmt_edge_bond_type, new_idx,
+                    new_idx + 1));
                 new_idx += 2;
               }
           }
@@ -133,20 +133,20 @@ public:
                     && atom_ids[itx->first - 1].find(ity->first) !=
                         atom_ids[itx->first - 1].end())
                   {
-                    new_bonds.push_back(Bond(bond_type_edge,
+                    new_bonds.push_back(Bond(o.mmt_edge_bond_type,
                         atom_ids[itx->first - 1][ity->first]["top"],
                         atom_ids[itx->first][ity->first]["top"]));
-                    new_bonds.push_back(Bond(bond_type_edge,
+                    new_bonds.push_back(Bond(o.mmt_edge_bond_type,
                         atom_ids[itx->first - 1][ity->first]["bottom"],
                         atom_ids[itx->first][ity->first]["bottom"]));
                   }
                 if (atom_ids[itx->first].find(ity->first - 1) !=
                            atom_ids[itx->first].end())
                   {
-                    new_bonds.push_back(Bond(bond_type_edge,
+                    new_bonds.push_back(Bond(o.mmt_edge_bond_type,
                         atom_ids[itx->first][ity->first - 1]["top"],
                         atom_ids[itx->first][ity->first]["top"]));
-                    new_bonds.push_back(Bond(bond_type_edge,
+                    new_bonds.push_back(Bond(o.mmt_edge_bond_type,
                         atom_ids[itx->first][ity->first - 1]["bottom"],
                         atom_ids[itx->first][ity->first]["bottom"]));
                   }
@@ -155,7 +155,7 @@ public:
                     && atom_ids[itx->first - 1].find(ity->first - 1) !=
                            atom_ids[itx->first - 1].end())
                   {
-                    new_bonds.push_back(Bond(bond_type_diagonal,
+                    new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
                         atom_ids[itx->first - 1][ity->first - 1]["top"],
                         atom_ids[itx->first][ity->first]["bottom"]));
                   }
@@ -163,7 +163,7 @@ public:
                     && atom_ids[itx->first - 1].find(ity->first + 1) !=
                            atom_ids[itx->first - 1].end())
                   {
-                    new_bonds.push_back(Bond(bond_type_diagonal,
+                    new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
                         atom_ids[itx->first - 1][ity->first + 1]["top"],
                         atom_ids[itx->first][ity->first]["bottom"]));
                   }
@@ -171,7 +171,7 @@ public:
                     && atom_ids[itx->first + 1].find(ity->first - 1) !=
                            atom_ids[itx->first + 1].end())
                   {
-                    new_bonds.push_back(Bond(bond_type_diagonal,
+                    new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
                         atom_ids[itx->first + 1][ity->first - 1]["top"],
                         atom_ids[itx->first][ity->first]["bottom"]));
                   }
@@ -180,7 +180,7 @@ public:
                     && atom_ids[itx->first + 1].find(ity->first + 1) !=
                            atom_ids[itx->first + 1].end())
                   {
-                    new_bonds.push_back(Bond(bond_type_diagonal,
+                    new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
                         atom_ids[itx->first + 1][ity->first + 1]["top"],
                         atom_ids[itx->first][ity->first]["bottom"]));
                   }
@@ -201,7 +201,7 @@ public:
               }
             for (auto it = charged_ids.begin(); it != charged_ids.end(); ++it)
               {
-                new_atoms[*it].q = bead_charge;
+                new_atoms[*it].q = o.bead_charge;
               }
           }
         #ifdef DEBUG
@@ -228,22 +228,44 @@ public:
         return true;
       };
 
-    bool add_modifier_gallery(float bead_charge, size_t tail_length,
-        size_t head_type, size_t tail_type, size_t head_tail_type,
-        size_t tail_tail_type, float planar_expansion_coeff,
-        float lj_bead_radius, float top, float bottom)
+    bool add_modifier_gallery(Options &o, float top, float bottom)
       {
+        #ifdef DEBUG
+        std::cout << "**********\n";
+        std::cout << "Structure.hpp add_modifier_gallery input parameters:\n";
+        std::cout << "tail_length = " << o.tail_length << std::endl;
+        std::cout << "planar_expansion_coeff = " << o.planar_expansion_coeff
+            << std::endl;
+        std::cout << "modifier_head_tail_bond_length = "
+            << o.modifier_head_tail_bond_length << std::endl;
+        std::cout << "modifier_tail_tail_bond_length = "
+            << o.modifier_tail_tail_bond_length << std::endl;
+        std::cout << "lj_bead_radius = " << o.lj_bead_radius << std::endl;
+        std::cout << "too_close_threshold = " << o.too_close_threshold
+            << std::endl;
+        std::cout << "modifier_head_atom_type = " << o.modifier_head_atom_type
+            << std::endl;
+        std::cout << "modifier_tail_atom_type = " << o.modifier_tail_atom_type
+            << std::endl;
+        std::cout << "bead_charge = " << o.bead_charge << std::endl;
+        std::cout << "head_tail_type = " << o.head_tail_type << std::endl;
+        std::cout << "tail_tail_type = " << o.tail_tail_type << std::endl;
+        std::cout << "top = " << top << std::endl;
+        std::cout << "bottom = " << bottom << std::endl;
+        std::cout << "**********\n";
+        #endif
         srand(time(NULL));
         float lx = this->xhi - this->xlo;
         float ly = this->yhi - this->ylo;
         float lz = this->zhi - this->zlo;
         float interlayer = top - bottom;
         size_t fails_done = 0;
+        // TODO adjust fails allowed
         size_t fails_allowed = 100;
         std::vector<Atom> new_atoms;
         std::vector<Bond> new_bonds;
         while (fails_done < fails_allowed
-            && new_atoms.size() != 1 + tail_length)
+            && new_atoms.size() != 1 + o.tail_length)
           {
             float x;
             float y;
@@ -253,8 +275,8 @@ public:
                 float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float z_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
-                x = this->xlo + lx/2 + lx/2 / planar_expansion_coeff * x_coeff;
-                y = this->ylo + ly/2 + ly/2 / planar_expansion_coeff * y_coeff;
+                x = this->xlo + lx/2 + lx/2 / o.planar_expansion_coeff * x_coeff;
+                y = this->ylo + ly/2 + ly/2 / o.planar_expansion_coeff * y_coeff;
                 z = bottom + interlayer * z_coeff;
               }
             else
@@ -267,10 +289,18 @@ public:
             float phi_coeff = (float)(rand()) / (float)(RAND_MAX);
             float theta = theta_coeff * M_PI;
             float phi = phi_coeff * 2*M_PI;
-            // TODO bond length
-            x += 2.25 * lj_bead_radius * sin(theta) * cos(phi);
-            y += 2.25 * lj_bead_radius * sin(theta) * sin(phi);
-            z += 2.25 * lj_bead_radius * cos(theta);
+            float r;
+            if (new_atoms.size() == 0)
+              {
+                r = o.modifier_head_tail_bond_length * o.lj_bead_radius;
+              }
+            else
+              {
+                r = o.modifier_tail_tail_bond_length * o.lj_bead_radius;
+              }
+            x += r * sin(theta) * cos(phi);
+            y += r * sin(theta) * sin(phi);
+            z += r * cos(theta);
             bool is_close = false;
             for (auto & atom : this->_atoms)
               {
@@ -278,8 +308,7 @@ public:
                 float dy = atom.second.y - y;
                 float dz = atom.second.z - z;
                 float dr = dx*dx + dy*dy + dz*dz;
-                // TODO threshold
-                if (dr < 3.5 * pow(lj_bead_radius, 2))
+                if (dr < pow(o.too_close_threshold, 2) * pow(o.lj_bead_radius, 2))
                   {
                     is_close = true;
                     break;
@@ -296,8 +325,7 @@ public:
                 float dy = atom.y - y;
                 float dz = atom.z - z;
                 float dr = dx*dx + dy*dy + dz*dz;
-                // TODO threshold
-                if (dr < 3.5 * pow(lj_bead_radius, 2))
+                if (dr < pow(o.too_close_threshold, 2) * pow(o.lj_bead_radius, 2))
                   {
                     is_close = true;
                     break;
@@ -309,15 +337,15 @@ public:
                 continue;
               }
             float q = 0;
-            size_t type = tail_type;
+            size_t type = o.modifier_tail_atom_type;
             if (new_atoms.size() == 0)
               {
-                q = bead_charge;
-                type = head_type;
+                q = o.bead_charge;
+                type = o.modifier_head_atom_type;
               }
             new_atoms.push_back(Atom(x, y, z, q, type, 0, 0, 0, "modifier"));
           }
-        if (new_atoms.size() != 1 + tail_length)
+        if (new_atoms.size() != 1 + o.tail_length)
           {
             return false;
           }
@@ -326,19 +354,130 @@ public:
             this->_atoms[this->_atoms_count + 1 + idx] = new_atoms[idx];
             if (idx == 0)
               {
-                this->_bonds[this->_bonds_count + 1] = Bond(head_tail_type,
+                this->_bonds[this->_bonds_count + 1] = Bond(
+                    o.head_tail_type,
                     this->_atoms_count + 1 + idx,
                     this->_atoms_count + 1 + idx + 1); 
               }
             else if (idx < new_atoms.size() - 1)
               {
-                this->_bonds[this->_bonds_count + 1 + idx] = Bond(tail_tail_type,
+                this->_bonds[this->_bonds_count + 1 + idx] = Bond(
+                    o.tail_tail_type,
                     this->_atoms_count + 1 + idx,
                     this->_atoms_count + 1 + idx + 1); 
               }
           }
-        this->_atoms_count += tail_length + 1;
-        this->_bonds_count += tail_length;
+        this->_atoms_count += o.tail_length + 1;
+        this->_bonds_count += o.tail_length;
+        return true;
+      }
+
+    bool add_polymer(Options &o)
+      {
+        #ifdef DEBUG
+        std::cout << "**********\n";
+        std::cout << "Structure.hpp add_polymer input parameters:\n";
+        std::cout << "polymer_bond_length = " << o.polymer_bond_length
+            << std::endl;
+        std::cout << "lj_bead_radius = " << o.lj_bead_radius << std::endl;
+        std::cout << "too_close_threshold = " << o.too_close_threshold << std::endl;
+        std::cout << "polymer_atom_type = " << o.polymer_atom_type << std::endl;
+        std::cout << "polymer_bond_type = " << o.polymer_bond_type << std::endl;
+        std::cout << "polymerization = " << o.polymerization << std::endl;
+        #endif
+        srand(time(NULL));
+        float lx = this->xhi - this->xlo;
+        float ly = this->yhi - this->ylo;
+        float lz = this->zhi - this->zlo;
+        size_t fails_done = 0;
+        // TODO adjust fails allowed
+        size_t fails_allowed = 100;
+        std::vector<Atom> new_atoms;
+        std::vector<Bond> new_bonds;
+        while (fails_done < fails_allowed
+            && new_atoms.size() != o.polymerization)
+          {
+            float x;
+            float y;
+            float z;
+            if (new_atoms.size() == 0)
+              {
+                float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
+                float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
+                float z_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
+                x = this->xlo + lx * x_coeff;
+                y = this->ylo + ly * y_coeff;
+                z = this->zlo + lz * z_coeff;
+              }
+            else
+              {
+                x = new_atoms[new_atoms.size() - 1].x;
+                y = new_atoms[new_atoms.size() - 1].y;
+                z = new_atoms[new_atoms.size() - 1].z;
+              }
+            float theta_coeff = (float)(rand()) / (float)(RAND_MAX);
+            float phi_coeff = (float)(rand()) / (float)(RAND_MAX);
+            float theta = theta_coeff * M_PI;
+            float phi = phi_coeff * 2*M_PI;
+            float r = o.polymer_bond_length * o.lj_bead_radius;
+            x += r * sin(theta) * cos(phi);
+            y += r * sin(theta) * sin(phi);
+            z += r * cos(theta);
+            bool is_close = false;
+            for (auto & atom : this->_atoms)
+              {
+                float dx = atom.second.x - x;
+                float dy = atom.second.y - y;
+                float dz = atom.second.z - z;
+                float dr = dx*dx + dy*dy + dz*dz;
+                if (dr < pow(o.too_close_threshold, 2) * pow(o.lj_bead_radius, 2))
+                  {
+                    is_close = true;
+                    break;
+                  }
+              }
+            if (is_close)
+              {
+                fails_done ++;
+                continue;
+              }
+            for (auto & atom : new_atoms)
+              {
+                float dx = atom.x - x;
+                float dy = atom.y - y;
+                float dz = atom.z - z;
+                float dr = dx*dx + dy*dy + dz*dz;
+                if (dr < pow(o.too_close_threshold, 2) * pow(o.lj_bead_radius, 2))
+                  {
+                    is_close = true;
+                    break;
+                  }
+              }
+            if (is_close)
+              {
+                fails_done ++;
+                continue;
+              }
+            new_atoms.push_back(Atom(x, y, z, 0, o.polymer_atom_type, 0, 0, 0,
+                "polymer"));
+          }
+        if (new_atoms.size() != o.polymerization)
+          {
+            return false;
+          }
+        for (size_t idx = 0; idx < new_atoms.size(); ++idx)
+          {
+            this->_atoms[this->_atoms_count + 1 + idx] = new_atoms[idx];
+            if (idx < new_atoms.size() - 1)
+              {
+                this->_bonds[this->_bonds_count + 1 + idx] = Bond(
+                    o.polymer_bond_type,
+                    this->_atoms_count + 1 + idx,
+                    this->_atoms_count + 1 + idx + 1); 
+              }
+          }
+        this->_atoms_count += o.polymerization;
+        this->_bonds_count += o.polymerization - 1;
         return true;
       }
 
