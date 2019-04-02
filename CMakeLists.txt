@@ -17,9 +17,7 @@ set (HEADERS
     src/options.hpp
     src/write_data.hpp
 )
-set (SOURCES
-    #src/tactoid.cpp
-)
 
 
-add_executable (tactoid ${HEADERS} ${SOURCES} tactoid.cpp)
+add_executable (isolated ${HEADERS} ${SOURCES} isolated.cpp)
+add_executable (periodic ${HEADERS} ${SOURCES} periodic.cpp)

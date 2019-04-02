@@ -25,6 +25,7 @@ public:
     size_t tail_tail_type;
     size_t polymer_atom_type;
     size_t polymer_bond_type;
+    size_t platelet_edge;
     float lx;
     float ly;
     float lz;
@@ -34,7 +35,8 @@ public:
     float real_interlayer;
     float dpd_rho;
     float lj_bead_radius;
-    float too_close_threshold;
+    float too_close_threshold_mmt;
+    float too_close_threshold_soft;
     float modifier_head_tail_bond_length;
     float modifier_tail_tail_bond_length;
     float polymer_bond_length;
@@ -87,8 +89,10 @@ public:
                 ofs >> this->head_tail_type;
             else if (option_name == "tail_tail_type")
                 ofs >> this->tail_tail_type;
-            else if (option_name == "too_close_threshold")
-                ofs >> this->too_close_threshold;
+            else if (option_name == "too_close_threshold_mmt")
+                ofs >> this->too_close_threshold_mmt;
+            else if (option_name == "too_close_threshold_soft")
+                ofs >> this->too_close_threshold_soft;
             else if (option_name == "modifier_head_tail_bond_length")
                 ofs >> this->modifier_head_tail_bond_length;
             else if (option_name == "modifier_tail_tail_bond_length")
@@ -99,6 +103,8 @@ public:
                 ofs >> this->polymer_atom_type;
             else if (option_name == "polymer_bond_type")
                 ofs >> this->polymer_bond_type;
+            else if (option_name == "platelet_edge")
+                ofs >> this->platelet_edge;
           }
       };
 
@@ -209,9 +215,15 @@ public:
             std::cout << " Type of modifier tail-tail bond\n";
         else
             std::cout << std::endl;
-        std::cout << "too_close_threshold = " << this->too_close_threshold;
+        std::cout << "too_close_threshold_mmt = " << this->too_close_threshold_mmt;
         if (verbose)
-            std::cout << " Threshold when beads are too close\n";
+            std::cout << " Threshold when beads are too close to mmt\n";
+        else
+            std::cout << std::endl;
+        std::cout << "too_close_threshold_soft = "
+            << this->too_close_threshold_soft;
+        if (verbose)
+            std::cout << " Threshold when beads are too close to soft phase\n";
         else
             std::cout << std::endl;
         std::cout << "modifier_head_tail_bond_length = "
@@ -239,6 +251,11 @@ public:
         std::cout << "polymer_bond_type = "  << this->polymer_bond_type;
         if (verbose)
             std::cout << " Type of all bonds in polymer\n";
+        else
+            std::cout << std::endl;
+        std::cout << "platelet_edge = "  << this->platelet_edge;
+        if (verbose)
+            std::cout << " Size of periodic MMT platelet\n";
         else
             std::cout << std::endl;
       }

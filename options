@@ -12,8 +12,11 @@ md_soft_atoms 41940
 # Ratio box_size / MMT_size
 planar_expansion_coeff 1.5
 
-# Radius of MMT platelet in beads
+# Radius of MMT platelet in beads if isolated algorithm is used
 platelet_radius 4
+
+# Edge length of MMT platelets in beads if periodic algorithm is used
+platelet_edge 100
 
 # Length of the modifier tail in beads
 tail_length 2
@@ -28,7 +31,7 @@ stacking 2
 polymerization 10
 
 # Interlayer space in the MMT stack in Angstroms
-real_interlayer 8
+real_interlayer 30
 
 # DPD density
 dpd_rho 3
@@ -47,8 +50,9 @@ tail_tail_type 4
 polymer_atom_type 4
 polymer_bond_type 5
 
-# Minimal allowed distance between beads
-too_close_threshold 1
+# Minimal allowed distance between beads (to mmt and to soft phase)
+too_close_threshold_mmt 2
+too_close_threshold_soft 1
 
 # Bond lengths
 modifier_head_tail_bond_length 2
