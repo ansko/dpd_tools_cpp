@@ -39,6 +39,14 @@ int main()
 
     // Compute modifiers count per one lamella:
     float real_mmt_area = 4 * pow(o.platelet_edge * real_bead_radius, 2);
+    // CEC = 92.6
+    // cell_square = 400
+    // cell_mass = 720
+    // nx*ny = 18
+    //     coeff = CEC * cell_mass
+    // 108 
+    // 0.015 = 108 / ly*lx
+    // 1/720 * 2/3 = 93.6 meq/100g
     size_t charged_count = 0.015 * real_mmt_area;
     #ifdef DEBUG
     std::cout << "**********\n";
@@ -136,7 +144,7 @@ int main()
     size_t polymers_done = 0;
     size_t polymers_fails_done = 0;
     // TODO
-    size_t polymers_fails_allowed = std::min(size_t(100000),
+    size_t polymers_fails_allowed = std::min(size_t(10000),
         polymers_count * o.polymerization);
     polymers_count = std::min(size_t(10000), polymers_count);
     while (polymers_done < polymers_count

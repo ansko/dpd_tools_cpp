@@ -8,7 +8,7 @@ atom_style    full
 bond_style    harmonic
 neighbor      3 bin
 neigh_modify  delay 0 every 1 check no page 500000 one 50000
-read_data     mmt_mod_test.data
+read_data     periodic_mmt_mod_poly.data
 mass * 1
 
 variable      dpdgamma   equal 5       # gamma from F_d
@@ -19,19 +19,34 @@ variable      dpdcutoff  equal 2.0
 
 pair_style    hybrid/overlay coul/cut ${pairradius} dpd 1 ${dpdcutoff} 419084618
 pair_coeff    1 1 dpd  0  ${dpdgamma} # clay - clay
-pair_coeff    1 2 dpd 10  ${dpdgamma} # clay - modifier head
-pair_coeff    1 3 dpd 10  ${dpdgamma} # clay - modifier tail
+pair_coeff    1 2 dpd 100  ${dpdgamma} # clay - modifier head
+pair_coeff    1 3 dpd 100  ${dpdgamma} # clay - modifier tail
+pair_coeff    1 4 dpd 100  ${dpdgamma} # clay - polymer
 pair_coeff    2 2 dpd 10  ${dpdgamma} # modifier head - modifier head
 pair_coeff    2 3 dpd 10  ${dpdgamma} # modifier head - modifier tail
+pair_coeff    2 4 dpd 10  ${dpdgamma} # modifier head - polymer
 pair_coeff    3 3 dpd 10  ${dpdgamma} # modifier tail - modifier tail
+pair_coeff    3 4 dpd 10  ${dpdgamma} # modifier tail - polymer
+pair_coeff    4 4 dpd 10  ${dpdgamma} # polymer - polymer
 pair_coeff    * * coul/cut
 bond_coeff    1 1000 2                   # clay bonds: edge and
 bond_coeff    2 1000 3.4641016151377544  # diagonal
 bond_coeff    3 10 3.4641016151377544  # modifier head - tail
 bond_coeff    4 10 3.4641016151377544  # modifier tail - tail
+bond_coeff    5 10 3.4641016151377544  # polymer - polymer
+
 thermo        10
 thermo_style  custom step density press pe ebond ecoul evdwl lz vol
-dump          d1 all image 1000 charged/*.jpg type type view 90 0
+
+#group         mmt_mod id 1:198
+#dump          d1 all image 10 charged/*.jpg type type view 90 0
+
 timestep      0.01
-fix           1 all npt x 0 10 10000 y 0 10 10000 z 0 10 10000 temp 1 1 10000
-run 10000
+fix           1 all nvt temp 1 1 10000
+
+label loop
+variable a loop 50
+    run 5000 start 0 stop 250000
+    write_data dpd.*.data
+    next a
+jump SELF loop

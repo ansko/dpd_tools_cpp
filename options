@@ -16,13 +16,13 @@ planar_expansion_coeff 1.5
 platelet_radius 4
 
 # Edge length of MMT platelets in beads if periodic algorithm is used
-platelet_edge 100
+platelet_edge 10
 
 # Length of the modifier tail in beads
 tail_length 2
 
 # Charge of the modifier head and of MMT substituted atoms
-bead_charge 1
+bead_charge 10
 
 # Number of platelets in the stack
 stacking 2
@@ -31,7 +31,7 @@ stacking 2
 polymerization 10
 
 # Interlayer space in the MMT stack in Angstroms
-real_interlayer 30
+real_interlayer 55
 
 # DPD density
 dpd_rho 3
