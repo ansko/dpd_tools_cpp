@@ -105,6 +105,9 @@ def write(fname='py_lmp_in', **kwargs):
 
 
 if __name__ == '__main__':
+    ###############
+    # some test parameters
+
     big_a = 100
     small_a = 1
 
@@ -114,13 +117,13 @@ if __name__ == '__main__':
     pair_radius = 7
     dpd_cutoff = 2
 
-    big_r = 2.5
+    big_r = 1.72
     small_r = 1.72
 
-    #############
+    ###############
 
     kwargs = {
-        'data_fname':   'periodic_compoite.data',
+        'data_fname':   'periodic_composite.data',
 
         'pair_radius':  pair_radius,
         'dpd_cutoff':   dpd_cutoff,
@@ -149,10 +152,10 @@ if __name__ == '__main__':
 
         'gamma':        5,
 
-        'r_cl':         small_r,
-        'r_mh':         big_r,
-        'r_mt':         big_r,
-        'r_po':         big_r,
+        'r_cl':         big_r,
+        'r_mh':         small_r,
+        'r_mt':         small_r,
+        'r_po':         small_r,
     }
 
     write(**kwargs)

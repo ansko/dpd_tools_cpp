@@ -72,7 +72,7 @@ int main()
     #endif
 
     // Adjust polymers count:
-    float free_volume = pow(xy_size, 3) * z_size
+    float free_volume = pow(xy_size, 2) * z_size
         -4 * pow(o.platelet_edge, 2) * pow(o.lj_bead_radius, 3)
         -charged_count * (1 + o.tail_length) * 4*pow(o.lj_bead_radius, 3);
     float polymer_volume = o.polymerization * pow(real_bead_radius, 3);
@@ -201,7 +201,7 @@ int main()
       }
     #endif
 
-    write_data("periodic_compoite.data", s);
+    write_data("periodic_composite.data", s);
 
     #ifdef DEBUG
       {
@@ -224,7 +224,8 @@ int main()
 
         std::cout << "real_bead_radius " << real_bead_radius << std::endl;
 
-        // lx=90, ly=8, cell_mass=720, n_cells=162 in composites studied my md
+        // In composites studied my md:
+        // lx = 90, ly = 8, cell_mass = 720 (40 atoms), n_cells = 162
         double mmt_real_surface = pow(xy_size * real_bead_radius, 2);
         double mmt_real_mass = 720*162 * mmt_real_surface / 90/80;
         double mmt_real_bead_mass = mmt_real_mass / mmt_atoms;

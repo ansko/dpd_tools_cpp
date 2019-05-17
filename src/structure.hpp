@@ -469,7 +469,7 @@ public:
         float close_r_sq_soft = pow(o.too_close_threshold_soft, 2)
                                 * pow(o.lj_bead_radius, 2);
         while (fails_done < fails_allowed
-            && new_atoms.size() != 1 + o.tail_length)
+               && new_atoms.size() != 1 + o.tail_length)
           {
             float x;
             float y;
@@ -586,18 +586,23 @@ public:
     bool add_polymer(Options &o)
       {
         #ifdef DEBUG
-        std::cout << "**********\n";
-        std::cout << "Structure.hpp add_polymer input parameters:\n";
-        std::cout << "polymer_bond_length = " << o.polymer_bond_length
-            << std::endl;
-        std::cout << "lj_bead_radius = " << o.lj_bead_radius << std::endl;
-        std::cout << "too_close_threshold_mmt = " << o.too_close_threshold_mmt
-            << std::endl;
-        std::cout << "too_close_threshold_soft = " << o.too_close_threshold_soft
-            << std::endl;
-        std::cout << "polymer_atom_type = " << o.polymer_atom_type << std::endl;
-        std::cout << "polymer_bond_type = " << o.polymer_bond_type << std::endl;
-        std::cout << "polymerization = " << o.polymerization << std::endl;
+        if (false)
+          {
+            std::cout << "**********\n";
+            std::cout << "Structure.hpp add_polymer input parameters:\n";
+            std::cout << "polymer_bond_length = " << o.polymer_bond_length
+                << std::endl;
+            std::cout << "lj_bead_radius = " << o.lj_bead_radius << std::endl;
+            std::cout << "too_close_threshold_mmt = "
+                << o.too_close_threshold_mmt << std::endl;
+            std::cout << "too_close_threshold_soft = "
+                << o.too_close_threshold_soft << std::endl;
+            std::cout << "polymer_atom_type = " << o.polymer_atom_type
+                << std::endl;
+            std::cout << "polymer_bond_type = " << o.polymer_bond_type
+                << std::endl;
+            std::cout << "polymerization = " << o.polymerization << std::endl;
+          }
         #endif
         srand(time(NULL));
         float lx = this->xhi - this->xlo;
@@ -605,15 +610,19 @@ public:
         float lz = this->zhi - this->zlo;
         size_t fails_done = 0;
         // TODO adjust fails allowed
-        size_t fails_allowed = 100;
+        // This parameter is important since it seems to affect
+        // on resulting dpd density strongly compared to attempts number
+        // in main function (periodic.cpp).
+        size_t fails_allowed = 500;
         std::vector<Atom> new_atoms;
         std::vector<Bond> new_bonds;
         float close_r_sq_mmt = pow(o.too_close_threshold_mmt, 2)
                                * pow(o.lj_bead_radius, 2);
+        // Important parameter, stronly affects on resulting density
         float close_r_sq_soft = pow(o.too_close_threshold_soft, 2)
                                 * pow(o.lj_bead_radius, 2);
         while (fails_done < fails_allowed
-            && new_atoms.size() != o.polymerization)
+               && new_atoms.size() != o.polymerization)
           {
             float x;
             float y;
@@ -622,7 +631,7 @@ public:
               {
                 float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
-                float z_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
+                float z_coeff = (float)(rand()) / (float)(RAND_MAX);// - 0.5;
                 x = this->xlo + lx * x_coeff;
                 y = this->ylo + ly * y_coeff;
                 z = this->zlo + lz * z_coeff;
@@ -654,8 +663,7 @@ public:
                 if ((dr < close_r_sq_mmt && atom.second.phase == "filler")
                     || dr < close_r_sq_soft)
                   {
-                    //std::cout << "--------" << dr << " " << atom.second.phase
-                    //    << " " << (atom.second.phase == "filler") << std::endl;
+                    //std::cout << "close 1\n";
                     is_close = true;
                     break;
                   }
@@ -677,6 +685,7 @@ public:
                 if (dr < close_r_sq_soft)
                   {
                     is_close = true;
+                    //std::cout << "close 2\n";
                     break;
                   }
               }
@@ -690,6 +699,7 @@ public:
           }
         if (new_atoms.size() != o.polymerization)
           {
+            //std::cout << "short\n";
             return false;
           }
         for (size_t idx = 0; idx < new_atoms.size(); ++idx)
