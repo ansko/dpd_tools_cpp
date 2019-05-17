@@ -116,6 +116,9 @@ int main()
     #endif
 
     // Add modifiers
+    // structure.hpp, add_modifiers:
+    // x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff
+    o.planar_expansion_coeff = 2;  // leads to modifier occupying all space
     size_t modifiers_done = 0;
     size_t modifiers_fails_done = 0;
     size_t modifiers_fails_allowed = charged_count;

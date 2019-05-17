@@ -478,9 +478,10 @@ public:
               {
                 float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
-                float z_coeff = (float)(rand()) / (float)(RAND_MAX);// - 0.5;
-                x = this->xlo + lx/2 + lx/2 / o.planar_expansion_coeff * x_coeff;
-                y = this->ylo + ly/2 + ly/2 / o.planar_expansion_coeff * y_coeff;
+                float z_coeff = (float)(rand()) / (float)(RAND_MAX);
+                // TODO Why division was here?
+                x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff;
+                y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
                 z = bottom + interlayer * z_coeff;
               }
             else
