@@ -26,8 +26,10 @@ int main()
     #endif
 
     // Compute general parameters
-    float real_bead_radius = std::cbrt(o.lx * o.ly * (o.lz - o.mmt_real_thickness)
-        / o.md_soft_atoms / (4/3 * M_PI));
+    // 1.35
+    //float real_bead_radius = std::cbrt(o.lx * o.ly * (o.lz - o.mmt_real_thickness)
+    //    / o.md_soft_atoms / (4/3 * M_PI));
+    float real_bead_radius = 1.35;
     float real_cutoff = std::cbrt(o.dpd_rho * 4/3 * M_PI) * real_bead_radius;
     float lj_interlayer = o.real_interlayer * o.lj_bead_radius / real_bead_radius;
     #ifdef DEBUG
@@ -41,9 +43,11 @@ int main()
       }
     #endif
 
+
     // Compute modifiers count per one lamella:
-    float real_mmt_area = M_PI * pow(o.platelet_radius* real_bead_radius, 2);
-    size_t charged_count = 0.015 * real_mmt_area * o.stacking;
+    float real_mmt_area = M_PI * pow(o.platelet_radius * real_bead_radius, 2);
+    //size_t charged_count = 0.015 * real_mmt_area * o.stacking;
+    size_t charged_count = 20;
     #ifdef DEBUG
       {
         std::cout << "**********\n";
@@ -55,11 +59,11 @@ int main()
     #endif
 
     // Compute box size
-    float min_height = o.real_interlayer * (o.stacking - 1)
+    float min_height = o.real_interlayer * o.stacking  // top and bottom
         + 4 * real_bead_radius * o.stacking;
-    float min_width = 2 * o.platelet_radius * real_bead_radius
-        * o.planar_expansion_coeff;
-    float cube_edge = std::max(cube_edge, min_height)
+    float min_width = 2*o.platelet_radius * 2*real_bead_radius
+        * std::max(float(1.25), o.planar_expansion_coeff);
+    float cube_edge = std::max(min_width, min_height)
         * o.lj_bead_radius / real_bead_radius;
     #ifdef DEBUG
       {
@@ -68,6 +72,10 @@ int main()
         std::cout << "min_height = " << min_height << std::endl;
         std::cout << "min_width = " << min_width << std::endl;
         std::cout << "cube_edge (in lj units) = " << cube_edge << std::endl;
+        std::cout << "mmt real radius: " << 2*o.lj_bead_radius *o.platelet_radius
+            << std::endl;
+        std::cout << "radii: " << o.lj_bead_radius << " " << real_bead_radius
+            << std::endl;
         std::cout << "**********\n";
       }
     #endif
@@ -82,6 +90,8 @@ int main()
       {
         std::cout << "**********\n";
         std::cout << "Polymers computations:\n";
+        std::cout << "Free volume = " << free_volume << std::endl;
+        std::cout << "Polymer volume = " << polymer_volume << std::endl;
         std::cout << "polymers_count = " << polymers_count << std::endl;
         std::cout << "**********\n";
       }
