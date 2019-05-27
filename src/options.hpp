@@ -26,6 +26,7 @@ public:
     size_t polymer_atom_type;
     size_t polymer_bond_type;
     size_t platelet_edge;
+    size_t modifiers_count_preset = 0;
     float lx;
     float ly;
     float lz;
@@ -105,6 +106,8 @@ public:
                 ofs >> this->polymer_bond_type;
             else if (option_name == "platelet_edge")
                 ofs >> this->platelet_edge;
+            else if (option_name == "modifiers_count_preset")
+                ofs >> this->modifiers_count_preset;
           }
       };
 
@@ -256,6 +259,11 @@ public:
         std::cout << "platelet_edge = "  << this->platelet_edge;
         if (verbose)
             std::cout << " Size of periodic MMT platelet\n";
+        else
+            std::cout << std::endl;
+        std::cout << "modifiers_count_preset = " << this->modifiers_count_preset;
+        if (verbose)
+            std::cout << " Preset number of modifiers\n";
         else
             std::cout << std::endl;
       }
