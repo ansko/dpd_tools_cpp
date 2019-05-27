@@ -73,15 +73,15 @@ int main()
         + 4 * real_bead_radius * o.stacking;
     float min_width = 2*o.platelet_radius * 2*real_bead_radius
         * std::max(float(1.25), o.planar_expansion_coeff);
-    float cube_edge = std::max(min_width, min_height)
-        * o.lj_bead_radius / real_bead_radius;
+    //float cube_edge = std::max(min_width, min_height)
+    //    * o.lj_bead_radius / real_bead_radius;
     #ifdef DEBUG
       {
         std::cout << "**********\n";
         std::cout << "Box computations:\n";
         std::cout << "min_height = " << min_height << std::endl;
         std::cout << "min_width = " << min_width << std::endl;
-        std::cout << "cube_edge (in lj units) = " << cube_edge << std::endl;
+        //std::cout << "cube_edge (in lj units) = " << cube_edge << std::endl;
         std::cout << "mmt real radius: " << 2*o.lj_bead_radius *o.platelet_radius
             << std::endl;
         std::cout << "radii: " << o.lj_bead_radius << " " << real_bead_radius
@@ -91,7 +91,7 @@ int main()
     #endif
 
     // Adjust polymers count:
-    float free_volume = pow(cube_edge, 3)
+    float free_volume = pow(min_width, 2) * min_height
         -4 * 4*pow(o.platelet_radius, 2) * pow(o.lj_bead_radius, 3)
         -charged_count * (1 + o.tail_length) * 4*pow(o.lj_bead_radius, 3);
     float polymer_volume = o.polymerization * pow(real_bead_radius, 3);
@@ -111,12 +111,12 @@ int main()
     Structure s;
 
     // Set calcualted box
-    s.xlo = -cube_edge;
-    s.xhi = cube_edge;
-    s.ylo = -cube_edge;
-    s.yhi = cube_edge;
-    s.zlo = -cube_edge;
-    s.zhi = cube_edge;
+    s.xlo = -min_width / 2;
+    s.xhi = min_width / 2;
+    s.ylo = -min_width / 2;
+    s.yhi = min_width / 2;
+    s.zlo = -min_height / 2;
+    s.zhi = min_height / 2;
 
     // Add MMT stack
     size_t half_stacking = o.stacking / 2;
@@ -262,8 +262,9 @@ int main()
         std::cout << "Structure created:\n"
             << "\tAtoms: " << s.atoms().size() << std::endl
             << "\tBonds: " << s.bonds().size() << std::endl
-            << "\tBox side: " << cube_edge << std::endl
-            << "\tDPD_rho: " << s.atoms().size() / pow(cube_edge, 3) << std::endl;
+            << "\tBox side: w=" << min_width << "; h=" << min_height << std::endl
+            << "\tDPD_rho: " << s.atoms().size() / pow(min_width, 2) * min_height
+            << std::endl;
 
         std::cout
             << "MMT: 1 - " << mmt_atoms << std::endl

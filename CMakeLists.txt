@@ -42,4 +42,5 @@ set (HEADERS
 
 
 add_executable (isolated ${HEADERS} ${SOURCES} isolated.cpp)
+add_executable (isolated_anisotropic ${HEADERS} ${SOURCES} isolated_anisotropic.cpp)
 add_executable (periodic ${HEADERS} ${SOURCES} periodic.cpp)
