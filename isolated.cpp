@@ -27,8 +27,8 @@ int main()
 
     // Compute general parameters
     // 1.35
-    //float real_bead_radius = std::cbrt(o.lx * o.ly * (o.lz - o.mmt_real_thickness)
-    //    / o.md_soft_atoms / (4/3 * M_PI));
+    float real_bead_radius2 = std::cbrt(o.lx * o.ly * (o.lz - o.mmt_real_thickness)
+        / o.md_soft_atoms / (4/3 * M_PI));
     float real_bead_radius = 1.35;
     float real_cutoff = std::cbrt(o.dpd_rho * 4/3 * M_PI) * real_bead_radius;
     float lj_interlayer = o.real_interlayer * o.lj_bead_radius / real_bead_radius;
@@ -46,8 +46,18 @@ int main()
 
     // Compute modifiers count per one lamella:
     float real_mmt_area = M_PI * pow(o.platelet_radius * real_bead_radius, 2);
-    //size_t charged_count = 0.015 * real_mmt_area * o.stacking;
-    size_t charged_count = 20;
+    size_t charged_count;
+    std::string modifier_count_taken_from;
+    if (!o.modifiers_count_preset)
+      {
+        charged_count = 0.015 * real_mmt_area * o.stacking;
+        modifier_count_taken_from = "CEC";
+      }
+    else
+      {
+        charged_count = o.modifiers_count_preset;
+        modifier_count_taken_from = "options";
+      }
     #ifdef DEBUG
       {
         std::cout << "**********\n";
@@ -130,7 +140,7 @@ int main()
         std::cout << "atoms_count = " << s.atoms().size() << std::endl;
         std::cout << "**********\n";
 
-        write_data("isolated_mmt.data", s);
+        //write_data("isolated_mmt.data", s);
       }
     #endif
 
@@ -193,7 +203,7 @@ int main()
                   << " of " << modifiers_fails_allowed << "\n";
         std::cout << "**********\n";
 
-        write_data("isolated_mmt_mod.data", s);
+        //write_data("isolated_mmt_mod.data", s);
       }
     #endif
 
@@ -235,7 +245,17 @@ int main()
       }
     #endif
 
-    write_data("isolated_mmt_mod_poly.data", s);
+    std::string data_out_fname("isolated_mmt");
+    data_out_fname += "_r" + std::to_string(o.platelet_radius);
+    data_out_fname += "_n" + std::to_string(o.stacking);
+    data_out_fname += "_mod_n" + std::to_string(modifiers_done);
+    data_out_fname += "_tail" + std::to_string(o.tail_length);
+    data_out_fname += "_poly_p" + std::to_string(o.polymerization);
+    data_out_fname += "_n" + std::to_string(polymers_done);
+    data_out_fname += ".data";
+
+    //write_data("isolated_mmt_mod_poly.data", s);
+    write_data(data_out_fname, s);
 
     #ifdef DEBUG
       {
@@ -243,15 +263,22 @@ int main()
             << "\tAtoms: " << s.atoms().size() << std::endl
             << "\tBonds: " << s.bonds().size() << std::endl
             << "\tBox side: " << cube_edge << std::endl
-           << "\tDPD_rho: " << s.atoms().size() / pow(cube_edge, 3) << std::endl;
+            << "\tDPD_rho: " << s.atoms().size() / pow(cube_edge, 3) << std::endl;
 
-        std::cout << "MMT: 1 - " << mmt_atoms << std::endl
-            << "modifier: " << mmt_atoms + 1 << " - " << mmt_atoms + modifier_atoms
-            << std::endl
+        std::cout
+            << "MMT: 1 - " << mmt_atoms << std::endl
+            << "modifier: " << mmt_atoms + 1 << " - "
+                << mmt_atoms + modifier_atoms
+                << " (" << modifiers_done << ") molecules"
+                << " (" << modifier_count_taken_from << ")" << std::endl
             << "polymer: " << mmt_atoms + modifier_atoms + 1 << " - "
-                << mmt_atoms + modifier_atoms + polymer_atoms << std::endl;
+                << mmt_atoms + modifier_atoms + polymer_atoms
+                << " (" << polymers_done << ") molecules" << std::endl;
+        std::cout << "result written into " << data_out_fname << std::endl;
       }
     #endif
+
+    std::cout << real_bead_radius2 << std::endl;
 
     return 0;
 }

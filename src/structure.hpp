@@ -630,8 +630,8 @@ public:
             float z;
             if (new_atoms.size() == 0)
               {
-                float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
-                float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
+                float x_coeff = (float)(rand()) / (float)(RAND_MAX);// - 0.5;
+                float y_coeff = (float)(rand()) / (float)(RAND_MAX);// - 0.5;
                 float z_coeff = (float)(rand()) / (float)(RAND_MAX);// - 0.5;
                 x = this->xlo + lx * x_coeff;
                 y = this->ylo + ly * y_coeff;
@@ -664,7 +664,6 @@ public:
                 if ((dr < close_r_sq_mmt && atom.second.phase == "filler")
                     || dr < close_r_sq_soft)
                   {
-                    //std::cout << "close 1\n";
                     is_close = true;
                     break;
                   }
