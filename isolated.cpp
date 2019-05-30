@@ -15,7 +15,7 @@ int main()
     bool verbose = true;
 
     // Parse options
-    Options o("options");
+    Options o("options_isolated");
     #ifdef DEBUG
       {
         std::cout << "**********\n";
@@ -26,7 +26,6 @@ int main()
     #endif
 
     // Compute general parameters
-    // 1.35
     float real_bead_radius2 = std::cbrt(o.lx * o.ly * (o.lz - o.mmt_real_thickness)
         / o.md_soft_atoms / (4/3 * M_PI));
     float real_bead_radius = 1.35;
@@ -72,9 +71,9 @@ int main()
     float min_height = o.real_interlayer * o.stacking  // top and bottom
         + 4 * real_bead_radius * o.stacking;
     float min_width = 2*o.platelet_radius * 2*real_bead_radius
-        * std::max(float(1.25), o.planar_expansion_coeff);
+        * std::max(float(o.planar_expansion_coeff), o.planar_expansion_coeff);
     float cube_edge = std::max(min_width, min_height)
-        * o.lj_bead_radius / real_bead_radius;
+        * o.lj_bead_radius / real_bead_radius;  // in lj units
     #ifdef DEBUG
       {
         std::cout << "**********\n";
@@ -94,7 +93,7 @@ int main()
     float free_volume = pow(cube_edge, 3)
         -4 * 4*pow(o.platelet_radius, 2) * pow(o.lj_bead_radius, 3)
         -charged_count * (1 + o.tail_length) * 4*pow(o.lj_bead_radius, 3);
-    float polymer_volume = o.polymerization * pow(real_bead_radius, 3);
+    float polymer_volume = o.polymerization * pow(o.lj_bead_radius, 3);
     size_t polymers_count = o.dpd_rho * free_volume / polymer_volume;
     #ifdef DEBUG
       {
@@ -166,7 +165,7 @@ int main()
       }
     size_t modifiers_done = 0;
     size_t modifiers_fails_done = 0;
-    size_t modifiers_fails_allowed = charged_count;
+    size_t modifiers_fails_allowed = charged_count * 1000;
     while (modifiers_done < charged_count * o.stacking
         && modifiers_fails_done < modifiers_fails_allowed)
       {
