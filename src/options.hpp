@@ -11,36 +11,36 @@
 class Options
 {
 public:
-    size_t md_soft_atoms;
-    size_t platelet_radius;
-    size_t tail_length;
-    size_t stacking;
-    size_t polymerization;
-    size_t mmt_atom_type;
-    size_t mmt_edge_bond_type;
-    size_t mmt_diagonal_bond_type;
-    size_t modifier_head_atom_type;
-    size_t modifier_tail_atom_type;
-    size_t head_tail_type;
-    size_t tail_tail_type;
-    size_t polymer_atom_type;
-    size_t polymer_bond_type;
-    size_t platelet_edge;
+    size_t md_soft_atoms = 0;
+    size_t platelet_radius = 0;
+    size_t tail_length = 0;
+    size_t stacking = 0;
+    size_t polymerization = 0;
+    size_t mmt_atom_type = 0;
+    size_t mmt_edge_bond_type = 0;
+    size_t mmt_diagonal_bond_type = 0;
+    size_t modifier_head_atom_type = 0;
+    size_t modifier_tail_atom_type = 0;
+    size_t head_tail_type = 0;
+    size_t tail_tail_type = 0;
+    size_t polymer_atom_type = 0;
+    size_t polymer_bond_type = 0;
+    size_t platelet_edge = 0;
     size_t modifiers_count_preset = 0;
-    float lx;
-    float ly;
-    float lz;
-    float mmt_real_thickness;
-    float planar_expansion_coeff;
-    float bead_charge;
-    float real_interlayer;
-    float dpd_rho;
-    float lj_bead_radius;
-    float too_close_threshold_mmt;
-    float too_close_threshold_soft;
-    float modifier_head_tail_bond_length;
-    float modifier_tail_tail_bond_length;
-    float polymer_bond_length;
+    float lx = -1;
+    float ly = -1;
+    float lz = -1;
+    float mmt_real_thickness = -1;
+    float planar_expansion_coeff = -1;
+    float bead_charge = -1;
+    float real_interlayer = -1;
+    float dpd_rho = -1;
+    float lj_bead_radius = -1;
+    float too_close_threshold_mmt = -1;
+    float too_close_threshold_soft = -1;
+    float modifier_head_tail_bond_length = -1;
+    float modifier_tail_tail_bond_length = -1;
+    float polymer_bond_length = -1;
 
     Options(std::string options_fname)
       {

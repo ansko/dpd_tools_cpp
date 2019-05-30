@@ -1,34 +1,17 @@
-# Geometrical size of the cell
-lx 20
-ly 20
-lz 20
-
 # Thickness of MMT platelet in Angstoms
 mmt_real_thickness 8
 
-# Number of soft atoms in the system studied by means of MD
-md_soft_atoms 41940
-
-# Ratio box_size / MMT_size
-planar_expansion_coeff 1.25
-
-# Radius of MMT platelet in beads if isolated algorithm is used
-platelet_radius 15
-
 # Edge length of MMT platelets in beads if periodic algorithm is used
-platelet_edge 6
+platelet_edge 10
 
 # Length of the modifier tail in beads
-tail_length 5
+tail_length 2
 
 # Charge of the modifier head and of MMT substituted atoms
 bead_charge 10
 
 # Number of modifiers (may contradict to CEC and has higher priority)
-modifiers_count_preset 180
-
-# Number of platelets in the stack
-stacking 2
+modifiers_count_preset 40
 
 # Polymer length in monomer (or in beads because 1 monomer == 1 bead)
 polymerization 10

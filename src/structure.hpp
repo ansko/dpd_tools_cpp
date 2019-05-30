@@ -242,7 +242,7 @@ public:
         #ifdef DEBUG
           {
             std::cout << "**********\n";
-            std::cout << "Structure.hpp add_mmt_circular input parameters:\n";
+            std::cout << "Structure.hpp add_mmt_periodic input parameters:\n";
             std::cout << "platelet_edge = " << o.platelet_edge << std::endl;
             std::cout << "bead_radius = " << o.lj_bead_radius << std::endl;
             std::cout << "atom_type = " << o.mmt_atom_type << std::endl;
