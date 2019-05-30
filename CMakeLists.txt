@@ -6,6 +6,9 @@ set (PROJECT dpd_tools)
 
 project (${PROJECT}) 
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 
 # CMAKE_CXX_FLAGS:
 #
@@ -33,6 +36,14 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     ")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
+#https://stackoverflow.com/a/9328525/7927226
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
+
+
 
 set (HEADERS
     src/structure.hpp
@@ -42,4 +53,8 @@ set (HEADERS
 
 
 add_executable (isolated ${HEADERS} ${SOURCES} isolated.cpp)
+
+add_executable (isolated_parallel ${HEADERS} ${SOURCES} isolated_parallel.cpp)
+target_link_libraries(isolated_parallel Threads::Threads)
+
 add_executable (periodic ${HEADERS} ${SOURCES} periodic.cpp)

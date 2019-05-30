@@ -10,9 +10,17 @@ added.
 
 ## source code
 
-### isolated.cpp
+### isolated.cpp, isolated_parallel.cpp
 
-Create isolated mmt platelet(s) surrounded by modifier in polymer.
+Create isolated mmt platelet(s) surrounded by modifier in polymer. Parallel 
+version splits parallelepipeds into sub-parallelepipeds along axis,
+their count is nx*ny*nz. Though the program works even when nx, ny and nz are 
+notably anisotropic, it is not a good case beacause may lead to a strong 
+orientation of polymers.
+
+On my notebook complete threads count:
+4 is ok for 41k atoms (74 to 14 s)
+8 is ok for 100k atoms (403 to 85 s)
 
 
 ### periodic.cpp

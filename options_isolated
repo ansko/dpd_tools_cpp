@@ -1,8 +1,13 @@
+# Threads count for parallel version is nx*ny*nz
+nx 2
+ny 2
+nz 1
+
 # Thickness of MMT platelet in Angstoms
 mmt_real_thickness 8
 
 # Ratio box_size / MMT_size
-planar_expansion_coeff 2
+planar_expansion_coeff 1.5
 
 # Radius of MMT platelet in beads if isolated algorithm is used
 platelet_radius 10
@@ -14,7 +19,7 @@ tail_length 5
 bead_charge 10
 
 # Number of modifiers (may contradict to CEC and has higher priority)
-modifiers_count_preset 40
+modifiers_count_preset 60
 
 # Number of platelets in the stack
 stacking 2

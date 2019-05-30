@@ -27,6 +27,9 @@ public:
     size_t polymer_bond_type = 0;
     size_t platelet_edge = 0;
     size_t modifiers_count_preset = 0;
+    size_t threads_nx = 1;
+    size_t threads_ny = 1;
+    size_t threads_nz = 1;
     float lx = -1;
     float ly = -1;
     float lz = -1;
@@ -108,6 +111,12 @@ public:
                 ofs >> this->platelet_edge;
             else if (option_name == "modifiers_count_preset")
                 ofs >> this->modifiers_count_preset;
+            else if (option_name == "nx")
+                ofs >> this->threads_nx;
+            else if (option_name == "ny")
+                ofs >> this->threads_ny;
+            else if (option_name == "nz")
+                ofs >> this->threads_nz;
           }
       };
 
@@ -264,6 +273,22 @@ public:
         std::cout << "modifiers_count_preset = " << this->modifiers_count_preset;
         if (verbose)
             std::cout << " Preset number of modifiers\n";
+        else
+            std::cout << std::endl;
+
+        std::cout << "threads_nx = " << this->threads_nx;
+        if (verbose)
+            std::cout << " Preset number of threads along x\n";
+        else
+            std::cout << std::endl;
+        std::cout << "threads_ny = " << this->threads_ny;
+        if (verbose)
+            std::cout << " Preset number of threads along y\n";
+        else
+            std::cout << std::endl;
+        std::cout << "threads_nz = " << this->threads_nz;
+        if (verbose)
+            std::cout << " Preset number of threads along z\n";
         else
             std::cout << std::endl;
       }

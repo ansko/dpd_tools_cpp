@@ -9,7 +9,7 @@ bond_style    harmonic
 neighbor      3 bin
 neigh_modify  delay 0 every 1 check no page 500000 one 50000
 
-read_data     isolated_mmt_mod_poly.data
+read_data     parallel_isolated_mmt_r3_n2_mod_n2_tail5_poly_p10_n4089.data
 mass          1 1
 mass          2 1.74
 mass          3 1.74
@@ -51,7 +51,7 @@ group         charged id 1:2940
 group         soft_rared id 2941:12730:100
 group         imagable union charged soft_rared
 
-dump          d1 imagable image 1000 images_dump/*.jpg type type view 90 0
+dump          d1 imagable image 1000 *.jpg type type view 90 0
 
 timestep      0.01
 fix           1 all nvt temp 1 1 10000

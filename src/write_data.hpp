@@ -9,7 +9,7 @@
 #include "structure.hpp"
 
 
-void write_data(std::string out_fname, Structure structure)
+void write_data(std::string out_fname, Structure &structure)
 {
     std::ofstream ofs(out_fname);
     ofs << "LAMMPS data file by Anton\n\n";

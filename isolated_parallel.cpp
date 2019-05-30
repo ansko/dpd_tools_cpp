@@ -2,12 +2,63 @@
 
 
 #include <cmath>
-#include <iostream>
 
+#include <array>
+#include <iostream>
+#include <thread>
 
 #include "src/options.hpp"
 #include "src/structure.hpp"
 #include "src/write_data.hpp"
+
+
+size_t three2one(size_t idx_x, size_t nx, size_t idx_y, size_t ny, size_t idx_z,
+size_t nz)
+{
+    return idx_x * ny*nz + idx_y * nz + idx_z;
+}
+
+
+std::array<size_t, 3> one2three(size_t idx1d, size_t nx, size_t ny, size_t nz)
+{
+    size_t idx_x, idx_y, idx_z;
+    idx_x = idx1d / (ny*nz);
+    idx1d -= idx_x * ny*nz;
+    idx_y = idx1d / nz;
+    idx_z = idx1d - idx_y * nz;
+    return std::array<size_t, 3>({idx_x, idx_y, idx_z});
+}
+
+
+void threading_function(size_t thread_idx, Structure &s, Options &o,
+size_t nx, size_t ny, size_t nz, size_t polymers_count)
+{
+    std::array<size_t, 3> idcs3d = one2three(thread_idx, nx, ny, nz);
+    size_t idx_x = idcs3d[0];
+    size_t idx_y = idcs3d[1];
+    size_t idx_z = idcs3d[2];
+    size_t polymers_done = 0;
+    size_t polymers_fails_done = 0;
+    size_t polymers_fails_allowed = polymers_count * o.polymerization;
+
+    while (polymers_done < polymers_count
+        && polymers_fails_done < polymers_fails_allowed)
+      {
+        if (polymers_done % (size_t(polymers_count / 10)) == 0)
+        std::cout << thread_idx << " " << polymers_done << " " << polymers_count
+            << std::endl;
+
+        bool status = s.add_polymer_parallel(o, idx_x, nx, idx_y, ny, idx_z, nz);
+        if (status)
+          {
+            polymers_done++;
+          }
+        else
+          {
+            polymers_fails_done ++;
+          }
+      }
+}
 
 
 int main()
@@ -26,8 +77,6 @@ int main()
     #endif
 
     // Compute general parameters
-    float real_bead_radius2 = std::cbrt(o.lx * o.ly * (o.lz - o.mmt_real_thickness)
-        / o.md_soft_atoms / (4/3 * M_PI));
     float real_bead_radius = 1.35;
     float real_cutoff = std::cbrt(o.dpd_rho * 4/3 * M_PI) * real_bead_radius;
     float lj_interlayer = o.real_interlayer * o.lj_bead_radius / real_bead_radius;
@@ -227,46 +276,74 @@ int main()
       }
     #endif
 
-    size_t polymers_done = 0;
-    size_t polymers_fails_done = 0;
-    size_t polymers_fails_allowed = polymers_count * o.polymerization;
-    while (polymers_done < polymers_count
-        && polymers_fails_done < polymers_fails_allowed)
+    // Parallelism with polymers starts here
+    size_t nx = o.threads_nx;
+    size_t ny = o.threads_ny;
+    size_t nz = o.threads_nz;
+
+    std::vector<std::thread> my_threads;
+    for (size_t idx_x = 0; idx_x < nx; ++idx_x)
+        for (size_t idx_y = 0; idx_y < ny; ++idx_y)
+            for (size_t idx_z = 0; idx_z < nz; ++idx_z)
+              {
+                size_t thread_idx(three2one(idx_x, nx, idx_y, ny, idx_z, nz));
+                my_threads.emplace_back(
+                    threading_function,
+                    thread_idx,
+                    std::ref(s), std::ref(o),
+                    nx, ny, nz, size_t(polymers_count / (nx*ny*nz)));
+              }
+    for (auto &th : my_threads)
       {
-        #ifdef DEBUG
-        if (polymers_done % (size_t(polymers_count / 10)) == 0)
+        th.join();
+      }
+
+    // Parallel version add polymers by parts all of which are size_t,
+    // so their sum may differ from the real value of polymers_count.
+    // This part adds left chains in not-parallel regime,
+    // since this count should be small.
+    size_t polymer_atoms = s.atoms().size() - mmt_atoms - modifier_atoms;
+    size_t polymers_done = polymer_atoms / o.polymerization;
+    if (polymers_done < polymers_count)
+      {
+        std::cout << "Not all polymers were added parallely, correcting...\n";
+        size_t polymers_fails_done(0);
+        size_t polymers_fails_allowed((polymers_count - polymers_done) * 10);
+        while (polymers_done < polymers_count
+            && polymers_fails_done < polymers_fails_allowed)
           {
-            std::cout << "**********\n";
-            std::cout << "Polymer addition: "
+            #ifdef DEBUG
+              {
+                std::cout << "**********\n";
+                std::cout << "Polymer addition: "
                       <<  polymers_done << " of " << polymers_count
                       << "; fais: " << polymers_fails_done
                       << " of " << polymers_fails_allowed << "\n";
-            std::cout << "**********\n";
-          }
-        #endif
-        bool status = s.add_polymer(o);
-        if (status)
-          {
-            polymers_done++;
-          }
-        else
-          {
-            polymers_fails_done ++;
+                std::cout << "**********\n";
+              }
+            #endif
+            bool status = s.add_polymer(o);
+            if (status)
+              {
+                polymers_done++;
+              }
+            else
+              {
+                polymers_fails_done ++;
+              }
           }
       }
-    size_t polymer_atoms = s.atoms().size() - mmt_atoms - modifier_atoms;
+
     #ifdef DEBUG
       {
         std::cout << "**********\n";
         std::cout << "Polymers addition after all: "
-                  <<  polymers_done << " of " << polymers_count
-                  << "; fais: " << polymers_fails_done
-                  << " of " << polymers_fails_allowed << "\n";
+                  <<  polymers_done << " of " << polymers_count << "\n";
         std::cout << "**********\n";
       }
     #endif
 
-    std::string data_out_fname("isolated_mmt");
+    std::string data_out_fname("parallel_isolated_mmt");
     data_out_fname += "_r" + std::to_string(o.platelet_radius);
     data_out_fname += "_n" + std::to_string(o.stacking);
     data_out_fname += "_mod_n" + std::to_string(modifiers_done);
