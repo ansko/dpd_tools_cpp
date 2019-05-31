@@ -9,7 +9,7 @@ bond_style    harmonic
 neighbor      3 bin
 neigh_modify  delay 0 every 1 check no page 500000 one 50000
 
-read_data     parallel_isolated_mmt_r3_n2_mod_n2_tail5_poly_p10_n4089.data
+read_data     parallel_isolated_mmt_r10_n2_mod_n4_tail5_poly_p10_n6242.data
 mass          1 1
 mass          2 1.74
 mass          3 1.74
@@ -19,18 +19,19 @@ mass          4 1.74
 # n==0 - ok
 # alpha == 1 - ok1
 # cutoff == ...
-pair_style    hybrid/overlay coul/cut/soft 0 1 7 dpd 1 2 6668635
+pair_style    hybrid/overlay coul/cut/soft 0 1 7 dpd 1 1 6668635
 
-pair_coeff    1 1 dpd 0 5
-pair_coeff    1 2 dpd 100 5 1.72
-pair_coeff    1 3 dpd 100 5 1.72
-pair_coeff    1 4 dpd 100 5 1.72
-pair_coeff    2 2 dpd 1 5 1.72
-pair_coeff    2 3 dpd 1 5 1.72
-pair_coeff    2 4 dpd 1 5 1.72
-pair_coeff    3 3 dpd 1 5 1.72
-pair_coeff    3 4 dpd 1 5 1.72
-pair_coeff    4 4 dpd 1 5 1.72
+#
+pair_coeff    1 1 dpd 0 5 0.46
+pair_coeff    1 2 dpd 100 5 0.58
+pair_coeff    1 3 dpd 100 5 0.58
+pair_coeff    1 4 dpd 100 5 0.58
+pair_coeff    2 2 dpd 1 5 0.7
+pair_coeff    2 3 dpd 1 5 0.7
+pair_coeff    2 4 dpd 1 5 0.7
+pair_coeff    3 3 dpd 1 5 0.7
+pair_coeff    3 4 dpd 1 5 0.7
+pair_coeff    4 4 dpd 1 5 0.7
 
 #pair_coeff    * * coul/cut
 
@@ -38,28 +39,22 @@ pair_coeff    4 4 dpd 1 5 1.72
 # 0.5 ok
 pair_coeff    * * coul/cut/soft 0.5
 
-bond_coeff    1 100 2
-bond_coeff    2 100 3.4641016151377544
-bond_coeff    3 10 2
-bond_coeff    4 10 2
-bond_coeff    5 2 2
+bond_coeff    1 1000 0.92
+bond_coeff    2 1000 1.59
+bond_coeff    3 10 1.4
+bond_coeff    4 10 1.4
+bond_coeff    5 2 1.4
 
 thermo        10
 thermo_style  custom step density press pe ebond ecoul evdwl lz
 
-group         charged id 1:2940
-group         soft_rared id 2941:12730:100
+group         charged id 1:1276
+group         soft_rared id 1277:63696:1000
 group         imagable union charged soft_rared
 
-dump          d1 imagable image 1000 *.jpg type type view 90 0
+dump          d1 imagable image 10 *.jpg type type view 90 0
 
 timestep      0.01
 fix           1 all nvt temp 1 1 10000
 
-label loop
-variable a loop 500
-    run 5000 start 0 stop 2500000
-    write_data dpd.*.data
-    write_restart dpd.*.restart
-    next a
-jump SELF loop
+run 5000

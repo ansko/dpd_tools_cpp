@@ -7,7 +7,7 @@
 #include <iostream>
 #include <thread>
 
-#include "src/options.hpp"
+#include "src/options_isolated_parallel.hpp"
 #include "src/structure.hpp"
 #include "src/write_data.hpp"
 
@@ -30,8 +30,9 @@ std::array<size_t, 3> one2three(size_t idx1d, size_t nx, size_t ny, size_t nz)
 }
 
 
-void threading_function(size_t thread_idx, Structure &s, Options &o,
-size_t nx, size_t ny, size_t nz, size_t polymers_count)
+void threading_function(size_t thread_idx, Structure &s,
+    OptionsIsolatedParallel &o,
+    size_t nx, size_t ny, size_t nz, size_t polymers_count)
 {
     std::array<size_t, 3> idcs3d = one2three(thread_idx, nx, ny, nz);
     size_t idx_x = idcs3d[0];
@@ -44,9 +45,13 @@ size_t nx, size_t ny, size_t nz, size_t polymers_count)
     while (polymers_done < polymers_count
         && polymers_fails_done < polymers_fails_allowed)
       {
+        #ifdef DETAILED_OUTPUT  // Information about thread's last step
         if (polymers_done % (size_t(polymers_count / 10)) == 0)
-        std::cout << thread_idx << " " << polymers_done << " " << polymers_count
-            << std::endl;
+          {
+            std::cout << thread_idx << " "
+                << polymers_done << " " << polymers_count << std::endl;
+          }
+        #endif
 
         bool status = s.add_polymer_parallel(o, idx_x, nx, idx_y, ny, idx_z, nz);
         if (status)
@@ -63,11 +68,14 @@ size_t nx, size_t ny, size_t nz, size_t polymers_count)
 
 int main()
 {
-    bool verbose = true;
+    bool verbose = false;
+    #ifdef DETAILED_OUTPUT
+        verbose = true;
+    #endif
 
     // Parse options
-    Options o("options_isolated");
-    #ifdef DEBUG
+    OptionsIsolatedParallel o("options_isolated");
+    #ifdef DETAILED_OUTPUT  // Print parsed options
       {
         std::cout << "**********\n";
         std::cout << "Parsed options:\n";
@@ -77,23 +85,11 @@ int main()
     #endif
 
     // Compute general parameters
-    float real_bead_radius = 1.35;
-    float real_cutoff = std::cbrt(o.dpd_rho * 4/3 * M_PI) * real_bead_radius;
-    float lj_interlayer = o.real_interlayer * o.lj_bead_radius / real_bead_radius;
-    #ifdef DEBUG
-      {
-        std::cout << "**********\n";
-        std::cout << "General parameters:\n";
-        std::cout << "real_bead_radius = " << real_bead_radius << std::endl;
-        std::cout << "real_cutoff = " << real_cutoff << std::endl;
-        std::cout << "lj_interlayer = " << lj_interlayer << std::endl;
-        std::cout << "**********\n";
-      }
-    #endif
-
+    float real_mmt_bead_d(o.real_r_c * 2*o.lj_bead_radius_clay);
+    float lj_interlayer = o.real_interlayer / o.real_r_c;
 
     // Compute modifiers count per one lamella:
-    float real_mmt_area = M_PI * pow(o.platelet_radius * real_bead_radius, 2);
+    float real_mmt_area = M_PI * pow(o.platelet_radius * real_mmt_bead_d, 2);
     size_t charged_count;
     std::string modifier_count_taken_from;
     if (!o.modifiers_count_preset)
@@ -106,7 +102,8 @@ int main()
         charged_count = o.modifiers_count_preset;
         modifier_count_taken_from = "options";
       }
-    #ifdef DEBUG
+
+    #ifdef DETAILED_OUTPUT  // Print parameters of MMT and modifier charges
       {
         std::cout << "**********\n";
         std::cout << "Derived parameters:\n";
@@ -117,65 +114,65 @@ int main()
     #endif
 
     // Compute box size
-    float min_height = o.real_interlayer * o.stacking  // top and bottom
-        + 4 * real_bead_radius * o.stacking;
-    float min_width = 2*o.platelet_radius * 2*real_bead_radius
-        * std::max(float(o.planar_expansion_coeff), o.planar_expansion_coeff);
-    float cube_edge = std::max(min_width, min_height)
-        * o.lj_bead_radius / real_bead_radius;  // in lj units
-    #ifdef DEBUG
+    float min_height = o.real_interlayer * o.stacking
+        + 2 * real_mmt_bead_d * o.stacking;
+    float min_width = 2*o.platelet_radius * real_mmt_bead_d
+        * float(o.planar_expansion_coeff);
+    float cube_edge = std::max(min_width, min_height) / o.real_r_c;
+
+    #ifdef DETAILED_OUTPUT  // Print box infomation
       {
         std::cout << "**********\n";
         std::cout << "Box computations:\n";
         std::cout << "min_height = " << min_height << std::endl;
         std::cout << "min_width = " << min_width << std::endl;
         std::cout << "cube_edge (in lj units) = " << cube_edge << std::endl;
-        std::cout << "mmt real radius: " << 2*o.lj_bead_radius *o.platelet_radius
-            << std::endl;
-        std::cout << "radii: " << o.lj_bead_radius << " " << real_bead_radius
-            << std::endl;
         std::cout << "**********\n";
       }
     #endif
 
     // Adjust polymers count:
-    float free_volume = pow(cube_edge, 3)
-        -4 * 4*pow(o.platelet_radius, 2) * pow(o.lj_bead_radius, 3)
-        -charged_count * (1 + o.tail_length) * 4*pow(o.lj_bead_radius, 3);
-    float polymer_volume = o.polymerization * pow(o.lj_bead_radius, 3);
-    size_t polymers_count = o.dpd_rho * free_volume / polymer_volume;
-    #ifdef DEBUG
+    float lj_cell_volume = pow(cube_edge, 3);
+    size_t all_beads_count = o.dpd_rho * lj_cell_volume;
+    size_t mmt_beads_count = 2 * size_t(M_PI * pow(o.platelet_radius, 2));
+    size_t single_mod_beads_count = 1 + o.tail_length;
+    size_t all_mods_beads_count = single_mod_beads_count * charged_count;
+    size_t single_polymer_beads_count = o.polymerization;
+    size_t polymers_count = round((all_beads_count
+        -mmt_beads_count - all_mods_beads_count) / o.polymerization);
+
+    #ifdef DETAILED_OUTPUT  // Print polymer addition parameters
       {
         std::cout << "**********\n";
         std::cout << "Polymers computations:\n";
-        std::cout << "Free volume = " << free_volume << std::endl;
-        std::cout << "Polymer volume = " << polymer_volume << std::endl;
         std::cout << "polymers_count = " << polymers_count << std::endl;
         std::cout << "**********\n";
       }
     #endif
 
-    // Start main algorithm
+    // *************************************************************************
+    //                             Start main algorithm
+    // *************************************************************************
     Structure s;
 
     // Set calcualted box
-    s.xlo = -cube_edge;
-    s.xhi = cube_edge;
-    s.ylo = -cube_edge;
-    s.yhi = cube_edge;
-    s.zlo = -cube_edge;
-    s.zhi = cube_edge;
+    s.xlo = -cube_edge/2;
+    s.xhi = cube_edge/2;
+    s.ylo = -cube_edge/2;
+    s.yhi = cube_edge/2;
+    s.zlo = -cube_edge/2;
+    s.zhi = cube_edge/2;
 
     // Add MMT stack
     size_t half_stacking = o.stacking / 2;
     size_t part_charged_count = charged_count / o.stacking;
     size_t charged_mmt_done = 0;
-    float dz = lj_interlayer / 2 + 2 * o.lj_bead_radius;
+    float dz = lj_interlayer / 2 + 2*o.lj_bead_radius_clay;
     if (o.stacking % 2 != 0)
       {
         bool status = s.add_mmt_circular(o, 0, 0, 0, part_charged_count);
         charged_mmt_done += part_charged_count;
-        dz = lj_interlayer + 4 * o.lj_bead_radius;
+        dz = lj_interlayer + 4 * o.lj_bead_radius_clay;
       }
     for (size_t idx = 0; idx < half_stacking; ++idx)
       {
@@ -198,18 +195,27 @@ int main()
         bool status = s.add_mmt_circular(o, 0, 0, dz, part_charged_count1);
         charged_mmt_done += part_charged_count1;
         status = s.add_mmt_circular(o, 0, 0, -dz, part_charged_count2);
-        dz += lj_interlayer + 4 * o.lj_bead_radius;
+        dz += lj_interlayer + 4 * o.lj_bead_radius_clay;
         charged_mmt_done += part_charged_count2;
       }
     size_t mmt_atoms = s.atoms().size();
-    #ifdef DEBUG
+
+    #ifdef DETAILED_OUTPUT  // Print results of MMT addition
       {
         std::cout << "**********\n";
         std::cout << "MMT addition:\n";
         std::cout << "atoms_count = " << s.atoms().size() << std::endl;
         std::cout << "**********\n";
+      }
+    #endif
 
-        //write_data("isolated_mmt.data", s);
+    #ifdef PARTIAL_DATAFILES
+      {
+        std::string data_out_fname("incomlete_parallel_isolated_mmt");
+        data_out_fname += "_r" + std::to_string(o.platelet_radius);
+        data_out_fname += "_n" + std::to_string(o.stacking);
+        data_out_fname += ".data";
+        write_data(data_out_fname, s);
       }
     #endif
 
@@ -220,7 +226,7 @@ int main()
         for (size_t idx = 0; idx < half_stacking; ++idx)
           {
             float top = lj_interlayer / 2
-                + idx * (lj_interlayer + 4 * o.lj_bead_radius);
+                + idx * (lj_interlayer + 4 * o.lj_bead_radius_clay);
             galleries.push_back(std::pair<float, float>(top - lj_interlayer, top));
           }
       }
@@ -228,8 +234,8 @@ int main()
       {
         for (size_t idx = 0; idx < half_stacking; ++idx)
           {
-            float top = lj_interlayer + 2 * o.lj_bead_radius
-                + idx * (lj_interlayer + 4 * o.lj_bead_radius);
+            float top = lj_interlayer + 2 * o.lj_bead_radius_clay
+                + idx * (lj_interlayer + 4 * o.lj_bead_radius_clay);
             galleries.push_back(std::pair<float, float>(top - lj_interlayer, top));
           }
       }
@@ -239,7 +245,7 @@ int main()
     while (modifiers_done < charged_count
         && modifiers_fails_done < modifiers_fails_allowed)
       {
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Print information about last step
           {
             std::cout << "**********\n";
             std::cout << "Modifier addition: "
@@ -249,6 +255,7 @@ int main()
             std::cout << "**********\n";
           }
         #endif
+
         size_t idx = rand() % galleries.size();
         float bottom = galleries[idx].first;
         float top = galleries[idx].second;
@@ -262,8 +269,16 @@ int main()
             modifiers_fails_done ++;
           }
       }
+
+    if (modifiers_done != charged_count)
+      {
+        std::cout << "Failed to add modifier\n";
+        return 0;
+      }
+
     size_t modifier_atoms = s.atoms().size() - mmt_atoms;
-    #ifdef DEBUG
+
+    #ifdef DETAILED_INFORMATION  // Print results of modifiers addition
       {
         std::cout << "**********\n";
         std::cout << "Modifier addition after all: "
@@ -271,8 +286,18 @@ int main()
                   << "; fais: " << modifiers_fails_done
                   << " of " << modifiers_fails_allowed << "\n";
         std::cout << "**********\n";
+      }
+    #endif
 
-        //write_data("isolated_mmt_mod.data", s);
+    #ifdef PARTIAL_DATAFILES
+      {
+        std::string data_out_fname("incomplete_parallel_isolated_mmt");
+        data_out_fname += "_r" + std::to_string(o.platelet_radius);
+        data_out_fname += "_n" + std::to_string(o.stacking);
+        data_out_fname += "_mod_n" + std::to_string(modifiers_done);
+        data_out_fname += "_tail" + std::to_string(o.tail_length);
+        data_out_fname += ".data";
+        write_data(data_out_fname, s);
       }
     #endif
 
@@ -312,7 +337,7 @@ int main()
         while (polymers_done < polymers_count
             && polymers_fails_done < polymers_fails_allowed)
           {
-            #ifdef DEBUG
+            #ifdef DETAILED_OUTPUT  // Print information about last step
               {
                 std::cout << "**********\n";
                 std::cout << "Polymer addition: "
@@ -334,7 +359,7 @@ int main()
           }
       }
 
-    #ifdef DEBUG
+    #ifdef DETAILED_OUTPUT  // Print overall information about polymer addition
       {
         std::cout << "**********\n";
         std::cout << "Polymers addition after all: "
@@ -351,37 +376,38 @@ int main()
     data_out_fname += "_poly_p" + std::to_string(o.polymerization);
     data_out_fname += "_n" + std::to_string(polymers_done);
     data_out_fname += ".data";
-
-    //write_data("isolated_mmt_mod_poly.data", s);
     write_data(data_out_fname, s);
 
-    #ifdef DEBUG
+    #ifdef GENERAL_OUTPUT
       {
         std::cout << "Structure created:\n"
             << "\tAtoms: " << s.atoms().size() << std::endl
             << "\tBonds: " << s.bonds().size() << std::endl
-            << "\tBox side: " << cube_edge << std::endl
-            << "\tDPD_rho: " << s.atoms().size() / pow(cube_edge, 3) << std::endl;
-
-        std::cout
-            << "MMT: 1 - " << mmt_atoms << std::endl
-            << "modifier: " << mmt_atoms + 1 << " - "
+            << "\tCubic box side: " << cube_edge << std::endl;
+        std::cout << "Atoms:"
+            << "\n\tMMT:      1 - " << mmt_atoms
+            << "\n\tmodifier: " << mmt_atoms + 1 << " - "
                 << mmt_atoms + modifier_atoms
-                << " (" << modifiers_done << ") molecules"
-                << " (" << modifier_count_taken_from << ")" << std::endl
-            << "polymer: " << mmt_atoms + modifier_atoms + 1 << " - "
-                << mmt_atoms + modifier_atoms + polymer_atoms
-                << " (" << polymers_done << ") molecules" << std::endl;
-        std::cout << "result written into " << data_out_fname << std::endl;
+                << " (" << modifiers_done << " molecules)"
+                << " (" << modifier_count_taken_from << ")"
+            << "\n\tpolymer:  " << mmt_atoms + modifier_atoms + 1 << " - "
+                << s.atoms().size()
+                << " (" << polymers_done << " molecules)" << std::endl;
+        std::cout << "Resulting structure written into:\n\t"
+            << data_out_fname << std::endl;
       }
     #endif
 
-    std::cout << "modifier_count_taken_from: " << modifier_count_taken_from
-        << "\ncharged_count: " << charged_count
-        << "\ncharged_mmt_done: " << charged_mmt_done
-        << "\nmodifiers_done: " << modifiers_done
-        << "\nratio: " << charged_count / (0.015 * real_mmt_area * o.stacking) * 93
-        << std::endl;
+    #ifdef GENERAL_OUTPUT  // Print DPD_rho and CEC
+      {
+        float DPD_rho = float(s.atoms().size())
+            / (s.xhi-s.xlo) / (s.yhi-s.ylo) / (s.zhi-s.zlo);
+        float CEC(real_mmt_area / 90 / 84 * 93 * 108/modifiers_done);
+        std::cout << "Physical parameters:\n"
+            << "\tDPD_rho (numerical): " << DPD_rho
+            << "\n\tCEC: " << CEC << std::endl;
+      }
+    #endif
 
     return 0;
 }

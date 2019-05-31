@@ -22,8 +22,9 @@ find_package(Threads REQUIRED)
 #   -lm    link math library
 #
 #   -DMACRO define MACRO:
-#     DEBUG               output debug information
-#     DPARTIAL_DATAFILES  write out some incomplete datafiles (for debug mainly)
+#     DETAILED_OUTPUT      print a lot of log information
+#     GENERAL_OUTPUT       print only main information
+#     PARTIAL_DATAFILES    write out some incomplete datafiles (for debug mainly)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}\
@@ -32,7 +33,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
             -g \
             -lm \
             -O3 \
-            -DDEBUG \
+            -DGENERAL_OUTPUT \
     ")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
@@ -47,14 +48,20 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 
 set (HEADERS
     src/structure.hpp
-    src/options.hpp
+    src/options_common.hpp
     src/write_data.hpp
 )
 
 
-add_executable (isolated ${HEADERS} ${SOURCES} isolated.cpp)
+add_executable (isolated
+    ${HEADERS} src/options_isolated.hpp
+    isolated.cpp)
 
-add_executable (isolated_parallel ${HEADERS} ${SOURCES} isolated_parallel.cpp)
+add_executable (isolated_parallel
+    ${HEADERS} src/options_isolated_parallel.hpp
+    isolated_parallel.cpp)
 target_link_libraries(isolated_parallel Threads::Threads)
 
-add_executable (periodic ${HEADERS} ${SOURCES} periodic.cpp)
+add_executable (periodic
+    ${HEADERS} src/options_periodic.hpp
+    periodic.cpp)

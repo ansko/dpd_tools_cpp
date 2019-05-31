@@ -1,7 +1,7 @@
 # Threads count for parallel version is nx*ny*nz
-nx 2
-ny 2
-nz 1
+threads_nx 2
+threads_ny 2
+threads_nz 1
 
 # Thickness of MMT platelet in Angstoms
 mmt_real_thickness 8
@@ -10,7 +10,7 @@ mmt_real_thickness 8
 planar_expansion_coeff 1.5
 
 # Radius of MMT platelet in beads if isolated algorithm is used
-platelet_radius 10
+platelet_radius 3
 
 # Length of the modifier tail in beads
 tail_length 5
@@ -19,7 +19,7 @@ tail_length 5
 bead_charge 10
 
 # Number of modifiers (may contradict to CEC and has higher priority)
-modifiers_count_preset 60
+modifiers_count_preset 4
 
 # Number of platelets in the stack
 stacking 2
@@ -34,7 +34,11 @@ real_interlayer 5
 dpd_rho 3
 
 # Bead radius in the lj units
-lj_bead_radius 1
+lj_bead_radius_clay 0.46
+lj_bead_radius_soft 0.70
+
+# Real rdaius of DPD cutoff
+real_r_c 5.23
 
 # Types of beads and bonds
 mmt_atom_type 1
@@ -48,8 +52,8 @@ polymer_atom_type 4
 polymer_bond_type 5
 
 # Minimal allowed distance between beads (to mmt and to soft phase)
-too_close_threshold_mmt 2
-too_close_threshold_soft 0.25
+too_close_threshold_mmt 1
+too_close_threshold_soft 0.01
 
 # Bond lengths
 modifier_head_tail_bond_length 2

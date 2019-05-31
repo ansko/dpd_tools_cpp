@@ -12,9 +12,13 @@
 #include <string>
 #include <vector>
 
-class Options;
+#include "options_common.hpp"
+#include "options_periodic.hpp"
+#include "options_isolated.hpp"
+#include "options_isolated_parallel.hpp"
 
 
+// A simple container class for atom properties
 struct Atom
 {
 public:
@@ -37,6 +41,7 @@ public:
 };
 
 
+// A simple container class for bond properties
 struct Bond
 {
 public:
@@ -52,6 +57,7 @@ public:
 };
 
 
+// A very big class for storing and creating composite structure
 class Structure
 {
 public:
@@ -76,38 +82,39 @@ public:
         return this->_bonds;
       }
 
-    bool add_mmt_circular(Options &o,
+    // Add an infinite (because of periodic boundary conditions) MMT platelet
+    bool add_mmt_circular(OptionsIsolated &o,
         float x=0, float y=0, float z=0, size_t charged_count=0)
       {
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Print parameters of MMT additions
         {
-            std::cout << "**********\n";
-            std::cout << "Structure.hpp add_mmt_circular input parameters:\n";
-            std::cout << "platelet_radius = " << o.platelet_radius << std::endl;
-            std::cout << "bead_radius = " << o.lj_bead_radius << std::endl;
-            std::cout << "atom_type = " << o.mmt_atom_type << std::endl;
-            std::cout << "mmt_edge_bond_type = "
-                << o.mmt_edge_bond_type << std::endl;
-            std::cout << "mmt_diagonal_bond_type = " << o.mmt_diagonal_bond_type
-                << std::endl;
-            std::cout << "x = " << x << std::endl;
-            std::cout << "y = " << y << std::endl;
-            std::cout << "z = " << z << std::endl;
-            std::cout << "charged_count = " << charged_count << std::endl;
-            std::cout << "bead_charge = " << o.bead_charge << std::endl;
-            std::cout << "**********\n";
+            std::cout << "**********\n"
+                << "\nStructure.hpp add_mmt_circular input parameters:\n"
+                << "\nplatelet_radius = " << o.platelet_radius
+                << "\nbead_radius_clay = " << o.lj_bead_radius_clay
+                << "\natom_type = " << o.mmt_atom_type
+                << "\nmmt_edge_bond_type = " << o.mmt_edge_bond_type
+                << "\nmmt_diagonal_bond_type = " << o.mmt_diagonal_bond_type
+                << "\nx = " << x
+                << "\ny = " << y
+                << "\nz = " << z
+                << "\ncharged_count = " << charged_count
+                << "\nbead_charge = " << o.bead_charge
+                << "\n**********\n";
           }
         #endif
+
         std::vector<Atom> new_atoms;
         std::vector<Bond> new_bonds;
         size_t new_idx = 1;
+
         // Add atoms and bonds top-bottom
         std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
         for (int idxx = -(int)o.platelet_radius + 1; idxx < (int)o.platelet_radius;
             ++idxx)
           {
             atom_ids[idxx] = std::map<int, std::map<std::string, size_t> >();
-            float dx = idxx * 2 * o.lj_bead_radius;
+            float dx = idxx * 2 * o.lj_bead_radius_clay;
             for (int idxy = -(int)o.platelet_radius + 1;
                 idxy < (int)o.platelet_radius; ++idxy)
               {
@@ -116,11 +123,11 @@ public:
                     continue;
                   }
                 atom_ids[idxx][idxy] = std::map<std::string, size_t>();
-                float dy = idxy * 2 * o.lj_bead_radius;
-                new_atoms.push_back(Atom(x + dx, y + dy, z - o.lj_bead_radius,
+                float dy = idxy * 2 * o.lj_bead_radius_clay;
+                new_atoms.push_back(Atom(x + dx, y + dy, z - o.lj_bead_radius_clay,
                     0, o.mmt_atom_type, 0, 0, 0, "filler"));
                 atom_ids[idxx][idxy]["bottom"] = new_idx;
-                new_atoms.push_back(Atom(x + dx, y + dy, z + o.lj_bead_radius,
+                new_atoms.push_back(Atom(x + dx, y + dy, z + o.lj_bead_radius_clay,
                     0, o.mmt_atom_type, 0, 0, 0, "filler"));
                 atom_ids[idxx][idxy]["top"] = new_idx + 1;
                 new_bonds.push_back(Bond(o.mmt_edge_bond_type, new_idx,
@@ -128,6 +135,7 @@ public:
                 new_idx += 2;
               }
           }
+
         // Add other bonds
         for (auto itx = atom_ids.begin(); itx != atom_ids.end(); ++itx)
           {
@@ -192,6 +200,7 @@ public:
                   }
               }
           }
+
         // Assign (or not) charges
         if (charged_count != 0)
           {
@@ -210,7 +219,7 @@ public:
                 new_atoms[*it].q = -o.bead_charge;
               }
           }
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Results of MMT addition
           {
             std::cout << "**********\n";
             std::cout << "MMT addition in structure.hpp:\n";
@@ -219,8 +228,8 @@ public:
             std::cout << "**********\n";
           }
         #endif
-        // Append created structure to the existing structure
-        std::cout << "Old atoms count\n" << this->_atoms_count << "\n";
+
+        // Append created structure into the existing structure
         for (size_t idx = 0; idx < new_bonds.size(); ++idx)
           {
             new_bonds[idx].atom_one += this->_atoms_count;
@@ -237,46 +246,47 @@ public:
       };
 
 
-    bool add_mmt_periodic(Options &o, float z=0, size_t charged_count=0)
+    // Add an isolated MMT platelet
+    bool add_mmt_periodic(OptionsPeriodic &o, float z=0, size_t charged_count=0)
       {
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Print parameters of MMT addition
           {
-            std::cout << "**********\n";
-            std::cout << "Structure.hpp add_mmt_periodic input parameters:\n";
-            std::cout << "platelet_edge = " << o.platelet_edge << std::endl;
-            std::cout << "bead_radius = " << o.lj_bead_radius << std::endl;
-            std::cout << "atom_type = " << o.mmt_atom_type << std::endl;
-            std::cout << "mmt_edge_bond_type = " << o.mmt_edge_bond_type
-                << std::endl;
-            std::cout << "mmt_diagonal_bond_type = " << o.mmt_diagonal_bond_type
-               << std::endl;
-            std::cout << "z = " << z << std::endl;
-            std::cout << "charged_count = " << charged_count << std::endl;
-            std::cout << "bead_charge = " << o.bead_charge << std::endl;
-            std::cout << "**********\n";
+            std::cout << "**********\n"
+                << "Structure.hpp add_mmt_periodic input parameters:\n"
+                << "platelet_edge = " << o.platelet_edge
+                << "\nbead_radius_clay = " << o.lj_bead_radius_clay
+                << "\natom_type = " << o.mmt_atom_type
+                << "\nmmt_edge_bond_type = " << o.mmt_edge_bond_type
+                << "\nmmt_diagonal_bond_type = " << o.mmt_diagonal_bond_type
+                << "\nz = " << z
+                << "\ncharged_count = " << charged_count
+                << "\nbead_charge = " << o.bead_charge
+                << "\n**********\n";
           }
         #endif
+
         std::vector<Atom> new_atoms;
         std::vector<Bond> new_bonds;
         size_t new_idx = 1;
+
         // Add atoms and bonds top-bottom
         std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
         for (int idxx = 0; idxx < (int)o.platelet_edge; ++idxx)
           {
             atom_ids[idxx] = std::map<int, std::map<std::string, size_t> >();
-            float dx = idxx * 2 * o.lj_bead_radius
-                       - (float)o.platelet_edge * o.lj_bead_radius
-                       + o.lj_bead_radius;
+            float dx = idxx * 2 * o.lj_bead_radius_clay
+                       - (float)o.platelet_edge * o.lj_bead_radius_clay
+                       + o.lj_bead_radius_clay;
             for (int idxy = 0; idxy < (int)o.platelet_edge; ++idxy)
               {
                 atom_ids[idxx][idxy] = std::map<std::string, size_t>();
-                float dy = idxy * 2 * o.lj_bead_radius
-                           - (float)o.platelet_edge * o.lj_bead_radius
-                           + o.lj_bead_radius;
-                new_atoms.push_back(Atom(dx, dy, z - o.lj_bead_radius,
+                float dy = idxy * 2 * o.lj_bead_radius_clay
+                           - (float)o.platelet_edge * o.lj_bead_radius_clay
+                           + o.lj_bead_radius_clay;
+                new_atoms.push_back(Atom(dx, dy, z - o.lj_bead_radius_clay,
                     0, o.mmt_atom_type, 0, 0, 0, "filler"));
                 atom_ids[idxx][idxy]["bottom"] = new_idx++;
-                new_atoms.push_back(Atom(dx, dy, z + o.lj_bead_radius,
+                new_atoms.push_back(Atom(dx, dy, z + o.lj_bead_radius_clay,
                     0, o.mmt_atom_type, 0, 0, 0, "filler"));
                 atom_ids[idxx][idxy]["top"] = new_idx++;
                 // Only bonds top-bottom
@@ -284,6 +294,7 @@ public:
                     new_idx - 1));
               }
           }
+
         // Add other bonds
         for (auto idx_x = 0; idx_x < (int)o.platelet_edge; ++idx_x)
           {
@@ -380,6 +391,7 @@ public:
                   }
               }
           }
+
         // Assign (or not) charges
         if (charged_count != 0)
           {
@@ -398,7 +410,7 @@ public:
                 new_atoms[*it].q = -o.bead_charge;
               }
           }
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Results of MMT addition
           {
             std::cout << "**********\n";
             std::cout << "MMT addition in structure.hpp:\n";
@@ -407,8 +419,8 @@ public:
             std::cout << "**********\n";
           }
         #endif
+
         // Append created structure to the existing structure
-        std::cout << "Old atoms count\n" << this->_atoms_count << "\n";
         for (size_t idx = 0; idx < new_bonds.size(); ++idx)
           {
             new_bonds[idx].atom_one += this->_atoms_count;
@@ -424,50 +436,49 @@ public:
         return true;
       };
 
-    bool add_modifier_gallery(Options &o, float top, float bottom)
+
+    // Add modifier into the space sconstrained by z = top and z = bottom
+    bool add_modifier_gallery(OptionsCommon &o, float top, float bottom)
       {
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Parameters of modifier addition
           {
-            std::cout << "**********\n";
-            std::cout << "Structure.hpp add_modifier_gallery input parameters:\n";
-            std::cout << "tail_length = " << o.tail_length << std::endl;
-            std::cout << "planar_expansion_coeff = " << o.planar_expansion_coeff
-                << std::endl;
-            std::cout << "modifier_head_tail_bond_length = "
-                << o.modifier_head_tail_bond_length << std::endl;
-            std::cout << "modifier_tail_tail_bond_length = "
-                << o.modifier_tail_tail_bond_length << std::endl;
-            std::cout << "lj_bead_radius = " << o.lj_bead_radius << std::endl;
-            std::cout << "too_close_threshold_mmt = " << o.too_close_threshold_mmt
-                << std::endl;
-            std::cout << "too_close_threshold_soft = " << o.too_close_threshold_soft
-                << std::endl;
-            std::cout << "modifier_head_atom_type = " << o.modifier_head_atom_type
-                << std::endl;
-            std::cout << "modifier_tail_atom_type = " << o.modifier_tail_atom_type
-                << std::endl;
-            std::cout << "bead_charge = " << o.bead_charge << std::endl;
-            std::cout << "head_tail_type = " << o.head_tail_type << std::endl;
-            std::cout << "tail_tail_type = " << o.tail_tail_type << std::endl;
-            std::cout << "top = " << top << std::endl;
-            std::cout << "bottom = " << bottom << std::endl;
-            std::cout << "**********\n";
+            std::cout << "**********\n"
+                << "Structure.hpp add_modifier_gallery input parameters:\n"
+                << "tail_length = " << o.tail_length
+                // << "\nplanar_expansion_coeff = " << o.planar_expansion_coeff
+                << "\nmodifier_head_tail_bond_length = "
+                    << o.modifier_head_tail_bond_length
+                << "\nmodifier_tail_tail_bond_length = "
+                    << o.modifier_tail_tail_bond_length
+                << "\nlj_bead_radius_soft = " << o.lj_bead_radius_soft
+                << "\ntoo_close_threshold_mmt = " << o.too_close_threshold_mmt
+                << "\ntoo_close_threshold_soft = " << o.too_close_threshold_soft
+                << "\nmodifier_head_atom_type = " << o.modifier_head_atom_type
+                << "\nmodifier_tail_atom_type = " << o.modifier_tail_atom_type
+                << "\nbead_charge = " << o.bead_charge
+                << "\nhead_tail_type = " << o.head_tail_type
+                << "\ntail_tail_type = " << o.tail_tail_type
+                << "\ntop = " << top
+                << "\nbottom = " << bottom
+                << "\n**********\n";
           }
         #endif
+
         srand(time(NULL));
         float lx = this->xhi - this->xlo;
         float ly = this->yhi - this->ylo;
         float lz = this->zhi - this->zlo;
         float interlayer = top - bottom;
         size_t fails_done = 0;
+
         // TODO adjust fails allowed
         size_t fails_allowed = 100;
         std::vector<Atom> new_atoms;
         std::vector<Bond> new_bonds;
         float close_r_sq_mmt = pow(o.too_close_threshold_mmt, 2)
-                               * pow(o.lj_bead_radius, 2);
+                               * pow(o.lj_bead_radius_soft, 2);
         float close_r_sq_soft = pow(o.too_close_threshold_soft, 2)
-                                * pow(o.lj_bead_radius, 2);
+                                * pow(o.lj_bead_radius_soft, 2);
         while (fails_done < fails_allowed
                && new_atoms.size() != 1 + o.tail_length)
           {
@@ -479,9 +490,10 @@ public:
                 float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float z_coeff = (float)(rand()) / (float)(RAND_MAX);
-                // TODO Why division was here?
-                x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff;
-                y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
+                //x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff;
+                //y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
+                x = this->xlo + lx/2 + lx/4 * x_coeff;  // planar coeff == 2
+                y = this->ylo + ly/2 + ly/4 * y_coeff;
                 z = bottom + interlayer * z_coeff;
               }
             else
@@ -497,11 +509,11 @@ public:
             float r;
             if (new_atoms.size() == 0)
               {
-                r = o.modifier_head_tail_bond_length * o.lj_bead_radius;
+                r = o.modifier_head_tail_bond_length * o.lj_bead_radius_soft;
               }
             else
               {
-                r = o.modifier_tail_tail_bond_length * o.lj_bead_radius;
+                r = o.modifier_tail_tail_bond_length * o.lj_bead_radius_soft;
               }
             x += r * sin(theta) * cos(phi);
             y += r * sin(theta) * sin(phi);
@@ -584,44 +596,38 @@ public:
         return true;
       }
 
-    bool add_polymer(Options &o)
+
+    // Add polymer to the system
+    bool add_polymer(OptionsCommon &o)
       {
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Print parameters of polymer addition
         if (false)
           {
-            std::cout << "**********\n";
-            std::cout << "Structure.hpp add_polymer input parameters:\n";
-            std::cout << "polymer_bond_length = " << o.polymer_bond_length
-                << std::endl;
-            std::cout << "lj_bead_radius = " << o.lj_bead_radius << std::endl;
-            std::cout << "too_close_threshold_mmt = "
-                << o.too_close_threshold_mmt << std::endl;
-            std::cout << "too_close_threshold_soft = "
-                << o.too_close_threshold_soft << std::endl;
-            std::cout << "polymer_atom_type = " << o.polymer_atom_type
-                << std::endl;
-            std::cout << "polymer_bond_type = " << o.polymer_bond_type
-                << std::endl;
-            std::cout << "polymerization = " << o.polymerization << std::endl;
+            std::cout << "**********\n"
+                << "Structure.hpp add_polymer input parameters:\n"
+                << "\npolymer_bond_length = " << o.polymer_bond_length
+                << "\nlj_bead_radius = " << o.lj_bead_radius_soft
+                << "\ntoo_close_threshold_mmt = " << o.too_close_threshold_mmt
+                << "\ntoo_close_threshold_soft = " << o.too_close_threshold_soft
+                << "\npolymer_atom_type = " << o.polymer_atom_type
+                << "\npolymer_bond_type = " << o.polymer_bond_type
+                << "\npolymerization = " << o.polymerization << std::endl;
           }
         #endif
+
         srand(time(NULL));
         float lx = this->xhi - this->xlo;
         float ly = this->yhi - this->ylo;
         float lz = this->zhi - this->zlo;
         size_t fails_done = 0;
         // TODO adjust fails allowed
-        // This parameter is important since it seems to affect
-        // on resulting dpd density strongly compared to attempts number
-        // in main function (periodic.cpp).
         size_t fails_allowed = 500;
         std::vector<Atom> new_atoms;
         std::vector<Bond> new_bonds;
         float close_r_sq_mmt = pow(o.too_close_threshold_mmt, 2)
-                               * pow(o.lj_bead_radius, 2);
-        // Important parameter, stronly affects on resulting density
+                               * pow(o.lj_bead_radius_soft, 2);
         float close_r_sq_soft = pow(o.too_close_threshold_soft, 2)
-                                * pow(o.lj_bead_radius, 2);
+                                * pow(o.lj_bead_radius_soft, 2);
         while (fails_done < fails_allowed
                && new_atoms.size() != o.polymerization)
           {
@@ -647,7 +653,7 @@ public:
             float phi_coeff = (float)(rand()) / (float)(RAND_MAX);
             float theta = theta_coeff * M_PI;
             float phi = phi_coeff * 2*M_PI;
-            float r = o.polymer_bond_length * o.lj_bead_radius;
+            float r = o.polymer_bond_length * o.lj_bead_radius_soft;
             x += r * sin(theta) * cos(phi);
             y += r * sin(theta) * sin(phi);
             z += r * cos(theta);
@@ -699,7 +705,6 @@ public:
           }
         if (new_atoms.size() != o.polymerization)
           {
-            //std::cout << "short\n";
             return false;
           }
         for (size_t idx = 0; idx < new_atoms.size(); ++idx)
@@ -719,16 +724,15 @@ public:
       }
 
 
-    bool add_polymer_parallel(Options &o,
+    // Parallel version of polymer addition.
+    // Crops whole box into nx*ny*nz parallelepipeds and inserts
+    // polymer chains into the parallelepiped that is defined by:
+    //     0 <= idx_x < nx
+    //     0 <= idx_y < ny
+    //     0 <= idx_z < nz
+    bool add_polymer_parallel(OptionsIsolatedParallel &o,
         size_t idx_x, size_t nx, size_t idx_y, size_t ny, size_t idx_z, size_t nz)
       {
-        /* Crops whole box into nx*ny*nz parallelepipeds and inserts
-           polymer chains into the parallelepiped that is defined by:
-           0 <= idx_x < nx
-           0 <= idx_y < ny
-           0 <= idx_z < nz
-        */
-
         srand(time(NULL));
         float lx = (this->xhi - this->xlo) / nx;
         float ly = (this->yhi - this->ylo) / ny;
@@ -741,38 +745,29 @@ public:
         float my_zhi = this->zlo + lz * (idx_z + 1);
         size_t fails_done = 0;
 
-        #ifdef DEBUG
+        #ifdef DETAILED_OUTPUT  // Print parameters of polmyer addition
         if (false)
           {
-            std::cout << "**********\n";
-            std::cout << "Structure.hpp add_polymer input parameters:\n";
-            std::cout << "polymer_bond_length = " << o.polymer_bond_length
-                << std::endl;
-            std::cout << "lj_bead_radius = " << o.lj_bead_radius << std::endl;
-            std::cout << "too_close_threshold_mmt = "
-                << o.too_close_threshold_mmt << std::endl;
-            std::cout << "too_close_threshold_soft = "
-                << o.too_close_threshold_soft << std::endl;
-            std::cout << "polymer_atom_type = " << o.polymer_atom_type
-                << std::endl;
-            std::cout << "polymer_bond_type = " << o.polymer_bond_type
-                << std::endl;
-            std::cout << "polymerization = " << o.polymerization << std::endl;
+            std::cout << "**********\n"
+                << "Structure.hpp add_polymer input parameters:\n"
+                << "polymer_bond_length = " << o.polymer_bond_length
+                << "\nlj_bead_radius_soft = " << o.lj_bead_radius_soft
+                << "\ntoo_close_threshold_mmt = " << o.too_close_threshold_mmt
+                << "too_close_threshold_soft = " << o.too_close_threshold_soft
+                << "polymer_atom_type = " << o.polymer_atom_type
+                << "polymer_bond_type = " << o.polymer_bond_type
+                << "polymerization = " << o.polymerization << std::endl;
           }
         #endif
 
         // TODO adjust fails allowed
-        // This parameter is important since it seems to affect
-        // on resulting dpd density strongly compared to attempts number
-        // in main function (periodic.cpp).
         size_t fails_allowed = 500;
         std::vector<Atom> new_atoms;
         std::vector<Bond> new_bonds;
         float close_r_sq_mmt = pow(o.too_close_threshold_mmt, 2)
-                               * pow(o.lj_bead_radius, 2);
-        // Important parameter, stronly affects on resulting density
+                               * pow(o.lj_bead_radius_soft, 2);
         float close_r_sq_soft = pow(o.too_close_threshold_soft, 2)
-                                * pow(o.lj_bead_radius, 2);
+                                * pow(o.lj_bead_radius_soft, 2);
         while (fails_done < fails_allowed
                && new_atoms.size() != o.polymerization)
           {
@@ -798,7 +793,7 @@ public:
             float phi_coeff = (float)(rand()) / (float)(RAND_MAX);
             float theta = theta_coeff * M_PI;
             float phi = phi_coeff * 2*M_PI;
-            float r = o.polymer_bond_length * o.lj_bead_radius;
+            float r = o.polymer_bond_length * o.lj_bead_radius_soft;
             x += r * sin(theta) * cos(phi);
             y += r * sin(theta) * sin(phi);
             z += r * cos(theta);
