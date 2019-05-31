@@ -241,7 +241,7 @@ int main()
       }
     size_t modifiers_done = 0;
     size_t modifiers_fails_done = 0;
-    size_t modifiers_fails_allowed = charged_count * 1000;
+    size_t modifiers_fails_allowed = charged_count * 10000;
     while (modifiers_done < charged_count
         && modifiers_fails_done < modifiers_fails_allowed)
       {
@@ -402,7 +402,7 @@ int main()
       {
         float DPD_rho = float(s.atoms().size())
             / (s.xhi-s.xlo) / (s.yhi-s.ylo) / (s.zhi-s.zlo);
-        float CEC(real_mmt_area / 90 / 84 * 93 * 108/modifiers_done / o.stacking);
+        float CEC(93 * 90*84/real_mmt_area * modifiers_done/108 / o.stacking);
         std::cout << "Physical parameters:\n"
             << "\tDPD_rho (numerical): " << DPD_rho
             << "\n\tCEC: " << CEC << std::endl;
