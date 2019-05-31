@@ -41,7 +41,7 @@ def write(fname='py_lmp_in', **kwargs):
     tmppr('atom_style    full')
     tmppr('bond_style    harmonic')
     tmppr('neighbor      3 bin')
-    tmppr('neigh_modify  delay 0 every 1 check no page 500000 one 50000')
+    tmppr('neigh_modify  delay 0 every 1 check no page 500000000 one 50000000')
     tmppr('')
     tmppr('read_data    ', kwargs['data_fname'])
     tmppr('mass          1 1')
@@ -91,7 +91,7 @@ def write(fname='py_lmp_in', **kwargs):
         mmt_atoms + mod_atoms + 1, atoms_count))
     tmppr('group         imagable union charged soft_rared')
     tmppr('dump         ', 
-          'd1 imagable image 1000 images_dump/*.jpg type type view 90 0')
+          'd1 imagable image 1000 *.jpg type type view 90 0')
     tmppr('')
     tmppr('timestep      0.0001')
     tmppr('fix          ',

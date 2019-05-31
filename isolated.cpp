@@ -324,7 +324,7 @@ int main()
 
         float DPD_rho = float(s.atoms().size())
             / (s.xhi-s.xlo) / (s.yhi-s.ylo) / (s.zhi-s.zlo);
-        float CEC(real_mmt_area / 90 / 84 * 93 * 108/modifiers_done);
+        float CEC(real_mmt_area / 90 / 84 * 93 * 108/modifiers_done / o.stacking);
         std::cout << "Physical parameters:\n"
             << "\tDPD_rho (numerical): " << DPD_rho
             << "\n\tCEC: " << CEC << std::endl;
