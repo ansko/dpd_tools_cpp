@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-#include "src/options.hpp"
+#include "src/options_periodic.hpp"
 #include "src/structure.hpp"
 #include "src/write_data.hpp"
 
@@ -15,7 +15,7 @@ int main()
     bool verbose = true;
 
     // Parse options
-    Options o("options_periodic");
+    OptionsPeriodic o("options_periodic");
     #ifdef DEBUG
       {
         // Output for checking wether parsed options are read correctly

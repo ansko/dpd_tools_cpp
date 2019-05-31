@@ -12,7 +12,11 @@
 #include <string>
 #include <vector>
 
-class Options;
+#include "options_common.hpp"
+#include "options_periodic.hpp"
+#include "options_isolated.hpp"
+#include "options_isolated_parallel.hpp"
+//class Options;
 
 
 struct Atom
@@ -76,7 +80,7 @@ public:
         return this->_bonds;
       }
 
-    bool add_mmt_circular(Options &o,
+    bool add_mmt_circular(OptionsIsolated &o,
         float x=0, float y=0, float z=0, size_t charged_count=0)
       {
         #ifdef DEBUG
@@ -237,7 +241,7 @@ public:
       };
 
 
-    bool add_mmt_periodic(Options &o, float z=0, size_t charged_count=0)
+    bool add_mmt_periodic(OptionsPeriodic &o, float z=0, size_t charged_count=0)
       {
         #ifdef DEBUG
           {
@@ -424,15 +428,15 @@ public:
         return true;
       };
 
-    bool add_modifier_gallery(Options &o, float top, float bottom)
+    bool add_modifier_gallery(OptionsCommon &o, float top, float bottom)
       {
         #ifdef DEBUG
           {
             std::cout << "**********\n";
             std::cout << "Structure.hpp add_modifier_gallery input parameters:\n";
             std::cout << "tail_length = " << o.tail_length << std::endl;
-            std::cout << "planar_expansion_coeff = " << o.planar_expansion_coeff
-                << std::endl;
+            //std::cout << "planar_expansion_coeff = " << o.planar_expansion_coeff
+            //    << std::endl;
             std::cout << "modifier_head_tail_bond_length = "
                 << o.modifier_head_tail_bond_length << std::endl;
             std::cout << "modifier_tail_tail_bond_length = "
@@ -480,8 +484,10 @@ public:
                 float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float z_coeff = (float)(rand()) / (float)(RAND_MAX);
                 // TODO Why division was here?
-                x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff;
-                y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
+                //x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff;
+                //y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
+                x = this->xlo + lx/2 + lx/4 * x_coeff;
+                y = this->ylo + ly/2 + ly/4 * y_coeff;
                 z = bottom + interlayer * z_coeff;
               }
             else
@@ -584,7 +590,7 @@ public:
         return true;
       }
 
-    bool add_polymer(Options &o)
+    bool add_polymer(OptionsCommon &o)
       {
         #ifdef DEBUG
         if (false)
@@ -719,7 +725,7 @@ public:
       }
 
 
-    bool add_polymer_parallel(Options &o,
+    bool add_polymer_parallel(OptionsIsolatedParallel &o,
         size_t idx_x, size_t nx, size_t idx_y, size_t ny, size_t idx_z, size_t nz)
       {
         /* Crops whole box into nx*ny*nz parallelepipeds and inserts

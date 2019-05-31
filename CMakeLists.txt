@@ -47,14 +47,20 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 
 set (HEADERS
     src/structure.hpp
-    src/options.hpp
+    src/options_common.hpp
     src/write_data.hpp
 )
 
 
-add_executable (isolated ${HEADERS} ${SOURCES} isolated.cpp)
+add_executable (isolated
+    ${HEADERS} src/options_isolated.hpp
+    isolated.cpp)
 
-add_executable (isolated_parallel ${HEADERS} ${SOURCES} isolated_parallel.cpp)
+add_executable (isolated_parallel
+    ${HEADERS} src/options_isolated_parallel.hpp
+    isolated_parallel.cpp)
 target_link_libraries(isolated_parallel Threads::Threads)
 
-add_executable (periodic ${HEADERS} ${SOURCES} periodic.cpp)
+add_executable (periodic
+    ${HEADERS} src/options_periodic.hpp
+    periodic.cpp)

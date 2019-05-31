@@ -9,7 +9,7 @@ bond_style    harmonic
 neighbor      3 bin
 neigh_modify  delay 0 every 1 check no page 500000 one 50000
 
-read_data     parallel_isolated_mmt_r3_n2_mod_n2_tail5_poly_p10_n4089.data
+read_data     periodic_mmt_edge10_mod_n40_tail2_poly_p10_n1408.data
 mass          1 1
 mass          2 1.74
 mass          3 1.74

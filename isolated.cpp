@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-#include "src/options.hpp"
+#include "src/options_isolated.hpp"
 #include "src/structure.hpp"
 #include "src/write_data.hpp"
 
@@ -15,7 +15,7 @@ int main()
     bool verbose = true;
 
     // Parse options
-    Options o("options_isolated");
+    OptionsIsolated o("options_isolated");
     #ifdef DEBUG
       {
         std::cout << "**********\n";
@@ -26,8 +26,6 @@ int main()
     #endif
 
     // Compute general parameters
-    float real_bead_radius2 = std::cbrt(o.lx * o.ly * (o.lz - o.mmt_real_thickness)
-        / o.md_soft_atoms / (4/3 * M_PI));
     float real_bead_radius = 1.35;
     float real_cutoff = std::cbrt(o.dpd_rho * 4/3 * M_PI) * real_bead_radius;
     float lj_interlayer = o.real_interlayer * o.lj_bead_radius / real_bead_radius;
