@@ -27,7 +27,9 @@ public:
     float bead_charge = -1;
     float real_interlayer = -1;
     float dpd_rho = -1;
-    float lj_bead_radius = -1;  // TODO -> split into Soft and Clay
+    float real_r_c = -1;
+    float lj_bead_radius_clay = -1;
+    float lj_bead_radius_soft = -1;
     float too_close_threshold_mmt = -1;
     float too_close_threshold_soft = -1;
     float modifier_head_tail_bond_length = -1;
@@ -42,6 +44,8 @@ public:
           {
             if (option_name == "mmt_real_thickness")
                 ofs >> this->mmt_real_thickness;
+            else if (option_name == "real_r_c")
+                ofs >> this->real_r_c;
             else if (option_name == "bead_charge")
                 ofs >> this->bead_charge;
             else if (option_name == "real_interlayer")
@@ -52,8 +56,12 @@ public:
                 ofs >> this->tail_length;
             else if (option_name == "polymerization")
                 ofs >> this->polymerization;
-            else if (option_name == "lj_bead_radius")
-                ofs >> this->lj_bead_radius;
+            //else if (option_name == "lj_bead_radius")
+            //    ofs >> this->lj_bead_radius;
+            else if (option_name == "lj_bead_radius_clay")
+                ofs >> this->lj_bead_radius_clay;
+            else if (option_name == "lj_bead_radius_soft")
+                ofs >> this->lj_bead_radius_soft;
             else if (option_name == "mmt_atom_type")
                 ofs >> this->mmt_atom_type;
             else if (option_name == "mmt_edge_bond_type")
@@ -119,9 +127,14 @@ public:
             std::cout << " Polymerization degree (in monomers)\n";
         else
             std::cout << std::endl;
-        std::cout << "lj_bead_radius = " << this->lj_bead_radius;
+        std::cout << "lj_bead_radius_clay = " << this->lj_bead_radius_clay;
         if (verbose)
-            std::cout << " Bead radius in lj units\n";
+            std::cout << " Bead radius of clay in lj units\n";
+        else
+            std::cout << std::endl;
+        std::cout << "lj_bead_radius_soft = " << this->lj_bead_radius_soft;
+        if (verbose)
+            std::cout << " Bead radius of soft in lj units\n";
         else
             std::cout << std::endl;
         std::cout << "mmt_atom_type = " << this->mmt_atom_type;
@@ -200,6 +213,11 @@ public:
         std::cout << "modifiers_count_preset = " << this->modifiers_count_preset;
         if (verbose)
             std::cout << " Preset number of modifiers\n";
+        else
+            std::cout << std::endl;
+        std::cout << "real_r_c = " << this->real_r_c;
+        if (verbose)
+            std::cout << " DPD cutoff in real units\n";
         else
             std::cout << std::endl;
       }

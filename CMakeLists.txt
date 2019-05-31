@@ -22,8 +22,9 @@ find_package(Threads REQUIRED)
 #   -lm    link math library
 #
 #   -DMACRO define MACRO:
-#     DEBUG               output debug information
-#     DPARTIAL_DATAFILES  write out some incomplete datafiles (for debug mainly)
+#     DETAILED_OUTPUT      print a lot of log information
+#     GENERAL_OUTPUT       print only main information
+#     PARTIAL_DATAFILES    write out some incomplete datafiles (for debug mainly)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}\
@@ -32,7 +33,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
             -g \
             -lm \
             -O3 \
-            -DDEBUG \
+            -DGENERAL_OUTPUT \
     ")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 

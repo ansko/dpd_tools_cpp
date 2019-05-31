@@ -52,9 +52,10 @@ def write(fname='py_lmp_in', **kwargs):
     tmppr('pair_style    hybrid/overlay coul/cut {0} dpd 1 {1} {2}'.format(
         kwargs['pair_radius'], kwargs['dpd_cutoff'], random.randint(1, 100000000)))
     tmppr('')
+
     # a_ij,  gamma, r_ij
-    tmppr('pair_coeff    1 1 dpd {0} {1}'.format(kwargs['a_cl_cl'],
-        kwargs['gamma']))
+    tmppr('pair_coeff    1 1 dpd {0} {1} {2}'.format(kwargs['a_cl_cl'],
+        kwargs['gamma'], kwargs['r_cl']))
     tmppr('pair_coeff    1 2 dpd {0} {1} {2}'.format(kwargs['a_cl_mh'],
         kwargs['gamma'], (kwargs['r_cl'] + kwargs['r_mh'])/2))
     tmppr('pair_coeff    1 3 dpd {0} {1} {2}'.format(kwargs['a_cl_mt'],
@@ -108,23 +109,21 @@ if __name__ == '__main__':
     ###############
     # some test parameters
 
-    big_a = 100
+    big_a = 100    # bead repulsion constants
     small_a = 1
 
-    big_k = 100
+    big_k = 100    # bond energy constants
     small_k = 10
 
-    pair_radius = 7
-    dpd_cutoff = 2
+    pair_radius = 15    # Coulomb interaction cutoff
+    dpd_cutoff = 1    # lj_r_c
 
-    big_r = 1.72
-    small_r = 1.72
+    soft_r = 0.7     # soft beads DPD radius
+    clay_r = 1.72    # clay beads DPD radius
 
     ###############
 
     kwargs = {
-        'data_fname':   'periodic_composite.data',
-
         'pair_radius':  pair_radius,
         'dpd_cutoff':   dpd_cutoff,
 
@@ -152,10 +151,12 @@ if __name__ == '__main__':
 
         'gamma':        5,
 
-        'r_cl':         big_r,
-        'r_mh':         small_r,
-        'r_mt':         small_r,
-        'r_po':         small_r,
+        'r_cl':         clay_r,
+        'r_mh':         soft_r,
+        'r_mt':         soft_r,
+        'r_po':         soft_r,
     }
+
+    kwargs['data_fname'] = 'isolated_mmt_r3_n2_mod_n4_tail5_poly_p10_n162.data'
 
     write(**kwargs)
