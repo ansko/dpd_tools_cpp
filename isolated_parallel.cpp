@@ -86,10 +86,10 @@ int main()
 
     // Compute general parameters
     float real_mmt_bead_d(o.real_r_c * 2*o.lj_bead_radius_clay);
-    float lj_interlayer = o.real_interlayer / o.real_r_c;
 
     // Compute modifiers count per one lamella:
     float real_mmt_area = M_PI * pow(o.platelet_radius * real_mmt_bead_d, 2);
+
     size_t charged_count;
     std::string modifier_count_taken_from;
     if (!o.modifiers_count_preset)
@@ -112,6 +112,11 @@ int main()
         std::cout << "**********\n";
       }
     #endif
+
+    // Compute interlayer based on modifiers size and count
+    float lj_mmt_area = real_mmt_area / o.real_r_c / o.real_r_c;
+    float lj_volume = (o.tail_length + 1) * charged_count * o.dpd_rho;
+    float lj_interlayer = lj_volume / lj_mmt_area;
 
     // Compute box size
     float min_height = o.real_interlayer * o.stacking
@@ -395,6 +400,7 @@ int main()
                 << " (" << polymers_done << " molecules)" << std::endl;
         std::cout << "Resulting structure written into:\n\t"
             << data_out_fname << std::endl;
+        std::cout << "Calculated lj interlayer = " << lj_interlayer << std::endl;
       }
     #endif
 

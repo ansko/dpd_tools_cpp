@@ -7,10 +7,10 @@ threads_nz 1
 mmt_real_thickness 8
 
 # Ratio box_size / MMT_size
-planar_expansion_coeff 1.5
+planar_expansion_coeff 3
 
 # Radius of MMT platelet in beads if isolated algorithm is used
-platelet_radius 3
+platelet_radius 10
 
 # Length of the modifier tail in beads
 tail_length 5
@@ -19,7 +19,7 @@ tail_length 5
 bead_charge 10
 
 # Number of modifiers (may contradict to CEC and has higher priority)
-modifiers_count_preset 4
+modifiers_count_preset 400
 
 # Number of platelets in the stack
 stacking 2

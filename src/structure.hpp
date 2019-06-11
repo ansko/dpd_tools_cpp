@@ -468,6 +468,7 @@ public:
         float lx = this->xhi - this->xlo;
         float ly = this->yhi - this->ylo;
         float lz = this->zhi - this->zlo;
+        float r_platelet = ((OptionsIsolated&)o).platelet_radius*2;
         float interlayer = top - bottom;
         size_t fails_done = 0;
 
@@ -487,13 +488,16 @@ public:
             float z;
             if (new_atoms.size() == 0)
               {
-                float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
-                float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
+                float alpha = 2*M_PI * (float)(rand()) / (float)(RAND_MAX);
+                //float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
+                //float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
                 float z_coeff = (float)(rand()) / (float)(RAND_MAX);
                 //x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff;
                 //y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
-                x = this->xlo + lx/2 + lx/4 * x_coeff;  // planar coeff == 2
-                y = this->ylo + ly/2 + ly/4 * y_coeff;
+                //x = this->xlo + lx/2 + lx/4 * x_coeff;  // planar coeff == 2
+                //y = this->ylo + ly/2 + ly/4 * y_coeff;
+                x = this->xlo + lx/2 + r_platelet * cos(alpha);
+                y = this->ylo + ly/2 + r_platelet * sin(alpha);
                 z = bottom + interlayer * z_coeff;
               }
             else
