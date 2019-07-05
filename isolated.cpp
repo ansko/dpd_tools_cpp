@@ -232,6 +232,26 @@ int main()
       }
     #endif
 
+    // Count modifiers molecules that are exactly in the interlayer
+    size_t interlayer_modifiers = 0;
+    if (o.stacking == 2)
+      {
+        float zlo = s.zhi, zhi = s.zlo;
+        for (size_t atom_idx = 0; atom_idx < mmt_atoms; ++atom_idx)
+          {
+              zlo = std::min(zlo, s.atoms()[atom_idx].z);
+              zhi = std::max(zhi, s.atoms()[atom_idx].z);
+          }
+        for (size_t atom_idx = mmt_atoms - 1; atom_idx < s.atoms().size();
+            ++atom_idx)
+          {
+              if (s.atoms()[atom_idx].z < zhi && s.atoms()[atom_idx].z > zlo)
+                {
+                  interlayer_modifiers++;
+                }
+          }
+      }
+
     #ifdef PARTIAL_DATAFILES  // Output incomplete data into file
       {
         std::string data_out_fname("incomplete_isolated_mmt");
@@ -287,6 +307,17 @@ int main()
                   <<  polymers_done << " of " << polymers_count
                   << "; fais: " << polymers_fails_done
                   << " of " << polymers_fails_allowed << "\n";
+        std::cout << "Interlayer modifiers: " << interlayer_modifiers
+                  << " having interlayer density: "
+                  << (1 + o.tail_length) * interlayer_modifiers
+                     / real_mmt_area / o.real_interlayer
+                     * o.real_r_c * o.real_r_c * o.real_r_c << std::endl;
+        std::cout << (1 + o.tail_length) * charged_count
+                     / (real_mmt_area / o.real_r_c / o.real_r_c)
+                     / (o.real_interlayer / o.real_r_c) << std::endl;
+        std::cout << "Overall density: "
+                  << s.atoms().size() / (s.xhi - s.xlo) / (s.yhi - s.ylo)
+                     / (s.zhi - s.zlo) << std::endl;
         std::cout << "**********\n";
       }
     #endif
