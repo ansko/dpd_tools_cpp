@@ -1,5 +1,5 @@
-#ifndef OPTIONS_COMMON_HPP
-#define OPTIONS_COMMON_HPP
+#ifndef OPTIONS_PARSER_HPP
+#define OPTIONS_PARSER_HPP
 
 
 #include <iostream>
@@ -8,9 +8,13 @@
 #include <string>
 
 
-class OptionsCommon
+// Read options from a specified file, where they are stored as
+// OPTION_NAME VALUE
+// and store read values.
+class OptionsParser
 {
 public:
+    // common
     size_t tail_length = 0;
     size_t polymerization = 0;
     size_t mmt_atom_type = 0;
@@ -35,8 +39,17 @@ public:
     float modifier_head_tail_bond_length = -1;
     float modifier_tail_tail_bond_length = -1;
     float polymer_bond_length = -1;
+    // isolated parallel
+    size_t platelet_radius = 0;
+    size_t stacking = 0;
+    float planar_expansion_coeff = -1;
+    size_t threads_nx = 0;
+    size_t threads_ny = 0;
+    size_t threads_nz = 0;
+    // periodic
+    size_t platelet_edge = 0;
 
-    OptionsCommon(std::string options_fname)
+    OptionsParser(std::string options_fname)
       {
         std::string option_name;
         std::ifstream ofs(options_fname);
@@ -56,8 +69,6 @@ public:
                 ofs >> this->tail_length;
             else if (option_name == "polymerization")
                 ofs >> this->polymerization;
-            //else if (option_name == "lj_bead_radius")
-            //    ofs >> this->lj_bead_radius;
             else if (option_name == "lj_bead_radius_clay")
                 ofs >> this->lj_bead_radius_clay;
             else if (option_name == "lj_bead_radius_soft")
@@ -92,11 +103,30 @@ public:
                 ofs >> this->polymer_bond_type;
             else if (option_name == "modifiers_count_preset")
                 ofs >> this->modifiers_count_preset;
+            // isolated parallel
+            else if (option_name == "planar_expansion_coeff")
+                ofs >> this->planar_expansion_coeff;
+            else if (option_name == "dpd_rho")
+                ofs >> this->dpd_rho;
+            else if (option_name == "platelet_radius")
+                ofs >> this->platelet_radius;
+            else if (option_name == "stacking")
+                ofs >> this->stacking;
+            else if (option_name == "threads_nx")
+                ofs >> this->threads_nx;
+            else if (option_name == "threads_ny")
+                ofs >> this->threads_ny;
+            else if (option_name == "threads_nz")
+                ofs >> this->threads_nz;
+            // periodic
+            else if (option_name == "platelet_edge")
+                ofs >> this->platelet_edge;
           }
       };
 
     void print_options(bool verbose=false)
       {
+        // common
         std::cout << "mmt_real_thickness = " << this->mmt_real_thickness;
         if (verbose)
             std::cout << " Thickness of a single MMT platelet (in Angstroms)\n";
@@ -220,8 +250,47 @@ public:
             std::cout << " DPD cutoff in real units\n";
         else
             std::cout << std::endl;
+
+        // isolated parallel
+        std::cout << "planar_expansion_coeff = " << this->planar_expansion_coeff;
+        if (verbose)
+            std::cout << " Cell increase coeff in xy plane around MMT platelet\n";
+        else
+            std::cout << std::endl;
+        std::cout << "platelet_radius = " << this->platelet_radius;
+        if (verbose)
+            std::cout << " Radius of MMT platelet (in beads)\n";
+        else
+            std::cout << std::endl;
+        std::cout << "stacking = " << this->stacking;
+        if (verbose)
+            std::cout << " MMT platelets count in the stack\n";
+        else
+            std::cout << std::endl;
+        std::cout << "threads_nx = " << this->threads_nx;
+        if (verbose)
+            std::cout << " Threads along x\n";
+        else
+            std::cout << std::endl;
+        std::cout << "threads_ny = " << this->threads_ny;
+        if (verbose)
+            std::cout << " Threads along y\n";
+        else
+            std::cout << std::endl;
+        std::cout << "threads_nz = " << this->threads_nz;
+        if (verbose)
+            std::cout << " Threads along z\n";
+        else
+            std::cout << std::endl;
+
+        // periodic
+        std::cout << "platelet_edge = " << this->platelet_edge;
+        if (verbose)
+            std::cout << " MMT platelet edge in beads\n";
+        else
+            std::cout << std::endl;
       }
 };
 
 
-#endif  // OPTIONS_COMMON_HPP
+#endif  // OPTIONS_PARSER_HPP

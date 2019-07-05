@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 
-#include "structure.hpp"
+#include "structures.hpp"
 
 
 void write_data(std::string out_fname, Structure &structure)
@@ -32,7 +32,7 @@ void write_data(std::string out_fname, Structure &structure)
         ofs << atoms_count << " atoms\n";
         ofs << atom_types.size() << " atom types\n";
         #ifdef DEBUG
-        std::cout << "Atom types count = " << atom_types.size() << std::endl;
+            std::cout << "Atom types count = " << atom_types.size() << std::endl;
         #endif
       }
     if (bonds_count > 0)
@@ -80,5 +80,6 @@ void write_data(std::string out_fname, Structure &structure)
           }
       }
 }
+
 
 #endif  // WRITE_DATA_HPP

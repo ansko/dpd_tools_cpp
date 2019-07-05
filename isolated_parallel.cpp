@@ -7,8 +7,11 @@
 #include <iostream>
 #include <thread>
 
-#include "src/options_isolated_parallel.hpp"
-#include "src/structure.hpp"
+#include "src/options_parser.hpp"
+#include "src/structure_add_polymer_parallel.hpp"
+#include "src/structure_add_mmt_circular.hpp"
+#include "src/structure_add_modifier_gallery.hpp"
+#include "src/structure_add_polymer.hpp"
 #include "src/write_data.hpp"
 
 
@@ -31,7 +34,7 @@ std::array<size_t, 3> one2three(size_t idx1d, size_t nx, size_t ny, size_t nz)
 
 
 void threading_function(size_t thread_idx, Structure &s,
-    OptionsIsolatedParallel &o,
+    OptionsParser &o,
     size_t nx, size_t ny, size_t nz, size_t polymers_count)
 {
     std::array<size_t, 3> idcs3d = one2three(thread_idx, nx, ny, nz);
@@ -43,7 +46,7 @@ void threading_function(size_t thread_idx, Structure &s,
     size_t polymers_fails_allowed = polymers_count * o.polymerization;
 
     while (polymers_done < polymers_count
-        && polymers_fails_done < polymers_fails_allowed)
+           && polymers_fails_done < polymers_fails_allowed)
       {
         #ifdef DETAILED_OUTPUT  // Information about thread's last step
         if (polymers_done % (size_t(polymers_count / 10)) == 0)
@@ -74,7 +77,7 @@ int main()
     #endif
 
     // Parse options
-    OptionsIsolatedParallel o("options_isolated");
+    OptionsParser o("options_isolated");
     #ifdef DETAILED_OUTPUT  // Print parsed options
       {
         std::cout << "**********\n";

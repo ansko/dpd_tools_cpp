@@ -5,8 +5,10 @@
 #include <iostream>
 
 
-#include "src/options_periodic.hpp"
-#include "src/structure.hpp"
+#include "src/options_parser.hpp"
+#include "src/structure_add_mmt_periodic.hpp"
+#include "src/structure_add_modifier_gallery.hpp"
+#include "src/structure_add_polymer.hpp"
 #include "src/write_data.hpp"
 
 
@@ -18,7 +20,7 @@ int main()
     #endif
 
     // Parse options
-    OptionsPeriodic o("options_periodic");
+    OptionsParser o("options_periodic");
     #ifdef DETAILED_OUTPUT  // Print all read options
       {
         std::cout << "**********\n";
