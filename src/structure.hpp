@@ -270,17 +270,20 @@ public:
         size_t new_idx = 1;
 
         // Add atoms and bonds top-bottom
+        // bond length = reduction_k * 2 * o.lj_bead_radius_clay ...
+        // but only along x and y
+        float reduction_k(0.5);
         std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
         for (int idxx = 0; idxx < (int)o.platelet_edge; ++idxx)
           {
             atom_ids[idxx] = std::map<int, std::map<std::string, size_t> >();
-            float dx = idxx * 2 * o.lj_bead_radius_clay
+            float dx = reduction_k * idxx * 2 * o.lj_bead_radius_clay
                        - (float)o.platelet_edge * o.lj_bead_radius_clay
                        + o.lj_bead_radius_clay;
             for (int idxy = 0; idxy < (int)o.platelet_edge; ++idxy)
               {
                 atom_ids[idxx][idxy] = std::map<std::string, size_t>();
-                float dy = idxy * 2 * o.lj_bead_radius_clay
+                float dy = reduction_k * idxy * 2 * o.lj_bead_radius_clay
                            - (float)o.platelet_edge * o.lj_bead_radius_clay
                            + o.lj_bead_radius_clay;
                 new_atoms.push_back(Atom(dx, dy, z - o.lj_bead_radius_clay,
