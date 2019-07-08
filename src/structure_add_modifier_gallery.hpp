@@ -8,22 +8,37 @@
 // Add modifier into the space sconstrained by z = top and z = bottom
 bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
 {
+    float modifier_head_tail_bond_length(o.get<float>(
+        "modifier_head_tail_bond_length"));
+    float modifier_tail_tail_bond_length(o.get<float>(
+        "modifier_tail_tail_bond_length"));
+    float lj_bead_radius_soft(o.get<float>("lj_bead_radius_soft"));
+    float too_close_threshold_mmt(o.get<float>("too_close_threshold_mmt"));
+    float too_close_threshold_soft(o.get<float>("too_close_threshold_soft"));
+    float bead_charge(o.get<float>("bead_charge"));
+    size_t tail_length(o.get<size_t>("tail_length"));
+    size_t modifier_head_atom_type(o.get<size_t>("modifier_head_atom_type"));
+    size_t modifier_tail_atom_type(o.get<size_t>("modifier_tail_atom_type"));
+    size_t head_tail_type(o.get<size_t>("head_tail_type"));
+    size_t tail_tail_type(o.get<size_t>("tail_tail_type"));
+    size_t platelet_radius(o.get<size_t>("platelet_radius"));
+
     #ifdef DETAILED_OUTPUT  // Parameters of modifier addition
         std::cout << "**********\n"
                   << "Structure.hpp add_modifier_gallery input parameters:\n"
-                  << "tail_length = " << o.tail_length
+                  << "tail_length = " << tail_length
                   << "\nmodifier_head_tail_bond_length = "
-                      << o.modifier_head_tail_bond_length
+                      << modifier_head_tail_bond_length
                   << "\nmodifier_tail_tail_bond_length = "
-                      << o.modifier_tail_tail_bond_length
-                  << "\nlj_bead_radius_soft = " << o.lj_bead_radius_soft
-                  << "\ntoo_close_threshold_mmt = " << o.too_close_threshold_mmt
-                  << "\ntoo_close_threshold_soft = " << o.too_close_threshold_soft
-                  << "\nmodifier_head_atom_type = " << o.modifier_head_atom_type
-                  << "\nmodifier_tail_atom_type = " << o.modifier_tail_atom_type
-                  << "\nbead_charge = " << o.bead_charge
-                  << "\nhead_tail_type = " << o.head_tail_type
-                  << "\ntail_tail_type = " << o.tail_tail_type
+                      << modifier_tail_tail_bond_length
+                  << "\nlj_bead_radius_soft = " << lj_bead_radius_soft
+                  << "\ntoo_close_threshold_mmt = " << too_close_threshold_mmt
+                  << "\ntoo_close_threshold_soft = " << too_close_threshold_soft
+                  << "\nmodifier_head_atom_type = " << modifier_head_atom_type
+                  << "\nmodifier_tail_atom_type = " << modifier_tail_atom_type
+                  << "\nbead_charge = " << bead_charge
+                  << "\nhead_tail_type = " << head_tail_type
+                  << "\ntail_tail_type = " << tail_tail_type
                   << "\ntop = " << top
                   << "\nbottom = " << bottom
                   << "\n**********\n";
@@ -33,7 +48,7 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
     float lx = this->xhi - this->xlo;
     float ly = this->yhi - this->ylo;
     float lz = this->zhi - this->zlo;
-    float r_platelet = o.platelet_radius*2;
+    float r_platelet = platelet_radius*2;
     float interlayer = top - bottom;
     size_t fails_done = 0;
 
@@ -41,11 +56,11 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
     size_t fails_allowed = 100;
     std::vector<Atom> new_atoms;
     std::vector<Bond> new_bonds;
-    float close_r_sq_mmt = pow(o.too_close_threshold_mmt, 2)
-        * pow(o.lj_bead_radius_soft, 2);
-    float close_r_sq_soft = pow(o.too_close_threshold_soft, 2)
-        * pow(o.lj_bead_radius_soft, 2);
-    while (fails_done < fails_allowed && new_atoms.size() != 1 + o.tail_length)
+    float close_r_sq_mmt = pow(too_close_threshold_mmt, 2)
+        * pow(lj_bead_radius_soft, 2);
+    float close_r_sq_soft = pow(too_close_threshold_soft, 2)
+        * pow(lj_bead_radius_soft, 2);
+    while (fails_done < fails_allowed && new_atoms.size() != 1 + tail_length)
       {
         float x;
         float y;
@@ -77,11 +92,11 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
         float r;
         if (new_atoms.size() == 0)
           {
-            r = o.modifier_head_tail_bond_length * o.lj_bead_radius_soft;
+            r = modifier_head_tail_bond_length * lj_bead_radius_soft;
           }
         else
           {
-            r = o.modifier_tail_tail_bond_length * o.lj_bead_radius_soft;
+            r = modifier_tail_tail_bond_length * lj_bead_radius_soft;
           }
         x += r * sin(theta) * cos(phi);
         y += r * sin(theta) * sin(phi);
@@ -126,15 +141,15 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
             continue;
           }
         float q = 0;
-        size_t type = o.modifier_tail_atom_type;
+        size_t type = modifier_tail_atom_type;
         if (new_atoms.size() == 0)
           {
-            q = o.bead_charge;
-            type = o.modifier_head_atom_type;
+            q = bead_charge;
+            type = modifier_head_atom_type;
           }
         new_atoms.push_back(Atom(x, y, z, q, type, 0, 0, 0, "modifier"));
       }
-    if (new_atoms.size() != 1 + o.tail_length)
+    if (new_atoms.size() != 1 + tail_length)
       {
         return false;
       }
@@ -144,20 +159,20 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
         if (idx == 0)
           {
             this->_bonds[this->_bonds_count + 1] = Bond(
-                o.head_tail_type,
+                head_tail_type,
                 this->_atoms_count + 1 + idx,
                 this->_atoms_count + 1 + idx + 1); 
           }
         else if (idx < new_atoms.size() - 1)
           {
             this->_bonds[this->_bonds_count + 1 + idx] = Bond(
-                o.tail_tail_type,
+                tail_tail_type,
                 this->_atoms_count + 1 + idx,
                 this->_atoms_count + 1 + idx + 1); 
           }
       }
-    this->_atoms_count += o.tail_length + 1;
-    this->_bonds_count += o.tail_length;
+    this->_atoms_count += tail_length + 1;
+    this->_bonds_count += tail_length;
 
     return true;
 }

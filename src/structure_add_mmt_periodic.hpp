@@ -8,17 +8,25 @@
 // Add an isolated MMT platelet
 bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count)
 {
+    float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
+    float bead_charge(o.get<float>("bead_charge"));
+    size_t platelet_edge(o.get<size_t>("platelet_edge"));
+    size_t mmt_atom_type(o.get<size_t>("mmt_atom_type"));
+    size_t mmt_edge_bond_type(o.get<size_t>("mmt_edge_bond_type"));
+    size_t mmt_diagonal_bond_type(o.get<size_t>("mmt_diagonal_bond_type"));
+
+
     #ifdef DETAILED_OUTPUT  // Print parameters of MMT addition
         std::cout << "**********\n"
                   << "Structure.hpp add_mmt_periodic input parameters:\n"
-                  << "platelet_edge = " << o.platelet_edge
-                  << "\nbead_radius_clay = " << o.lj_bead_radius_clay
-                  << "\natom_type = " << o.mmt_atom_type
-                  << "\nmmt_edge_bond_type = " << o.mmt_edge_bond_type
-                  << "\nmmt_diagonal_bond_type = " << o.mmt_diagonal_bond_type
+                  << "platelet_edge = " << platelet_edge
+                  << "\nbead_radius_clay = " << lj_bead_radius_clay
+                  << "\natom_type = " << mmt_atom_type
+                  << "\nmmt_edge_bond_type = " << mmt_edge_bond_type
+                  << "\nmmt_diagonal_bond_type = " << mmt_diagonal_bond_type
                   << "\nz = " << z
                   << "\ncharged_count = " << charged_count
-                  << "\nbead_charge = " << o.bead_charge
+                  << "\nbead_charge = " << bead_charge
                   << "\n**********\n";
     #endif
 
@@ -27,38 +35,38 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
     size_t new_idx = 1;
 
     // Add atoms and bonds top-bottom
-    // bond length = reduction_k * 2 * o.lj_bead_radius_clay ...
+    // bond length = reduction_k * 2 * lj_bead_radius_clay ...
     // but only along x and y
     float reduction_k(1.0);  // TODO: introduce !=1 values
     std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
-    for (int idxx = 0; idxx < (int)o.platelet_edge; ++idxx)
+    for (int idxx = 0; idxx < (int)platelet_edge; ++idxx)
       {
         atom_ids[idxx] = std::map<int, std::map<std::string, size_t> >();
-        float dx = reduction_k * idxx * 2 * o.lj_bead_radius_clay
-                   - (float)o.platelet_edge * o.lj_bead_radius_clay
-                   + o.lj_bead_radius_clay;
-        for (int idxy = 0; idxy < (int)o.platelet_edge; ++idxy)
+        float dx = reduction_k * idxx * 2 * lj_bead_radius_clay
+                   - (float)platelet_edge * lj_bead_radius_clay
+                   + lj_bead_radius_clay;
+        for (int idxy = 0; idxy < (int)platelet_edge; ++idxy)
           {
             atom_ids[idxx][idxy] = std::map<std::string, size_t>();
-            float dy = reduction_k * idxy * 2 * o.lj_bead_radius_clay
-                       - (float)o.platelet_edge * o.lj_bead_radius_clay
-                       + o.lj_bead_radius_clay;
-            new_atoms.push_back(Atom(dx, dy, z - o.lj_bead_radius_clay,
-                0, o.mmt_atom_type, 0, 0, 0, "filler"));
+            float dy = reduction_k * idxy * 2 * lj_bead_radius_clay
+                       - (float)platelet_edge * lj_bead_radius_clay
+                       + lj_bead_radius_clay;
+            new_atoms.push_back(Atom(dx, dy, z - lj_bead_radius_clay,
+                0, mmt_atom_type, 0, 0, 0, "filler"));
             atom_ids[idxx][idxy]["bottom"] = new_idx++;
-            new_atoms.push_back(Atom(dx, dy, z + o.lj_bead_radius_clay,
-                0, o.mmt_atom_type, 0, 0, 0, "filler"));
+            new_atoms.push_back(Atom(dx, dy, z + lj_bead_radius_clay,
+                0, mmt_atom_type, 0, 0, 0, "filler"));
             atom_ids[idxx][idxy]["top"] = new_idx++;
             // Only bonds top-bottom
-            new_bonds.push_back(Bond(o.mmt_edge_bond_type, new_idx - 2,
+            new_bonds.push_back(Bond(mmt_edge_bond_type, new_idx - 2,
                 new_idx - 1));
           }
       }
 
     // Add other bonds
-    for (auto idx_x = 0; idx_x < (int)o.platelet_edge; ++idx_x)
+    for (auto idx_x = 0; idx_x < (int)platelet_edge; ++idx_x)
       {
-        for (auto idx_y = 0; idx_y < (int)o.platelet_edge; ++idx_y)
+        for (auto idx_y = 0; idx_y < (int)platelet_edge; ++idx_y)
           {
             // Edge bonds
             size_t other_idx_x_minus;
@@ -67,12 +75,12 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
             size_t other_idx_y_plus;
             if (idx_x == 0)
               {
-                other_idx_x_minus = o.platelet_edge - 1;
+                other_idx_x_minus = platelet_edge - 1;
                 other_idx_x_plus = 1;
               }
-            else if (idx_x == o.platelet_edge - 1)
+            else if (idx_x == platelet_edge - 1)
               {
-                other_idx_x_minus = o.platelet_edge - 2;
+                other_idx_x_minus = platelet_edge - 2;
                 other_idx_x_plus = 0;
               }
             else
@@ -82,12 +90,12 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
               }
             if (idx_y == 0)
               {
-                other_idx_y_minus = o.platelet_edge - 1;
+                other_idx_y_minus = platelet_edge - 1;
                 other_idx_y_plus = 1;
               }
-            else if (idx_y == o.platelet_edge - 1)
+            else if (idx_y == platelet_edge - 1)
               {
-                other_idx_y_minus = o.platelet_edge - 2;
+                other_idx_y_minus = platelet_edge - 2;
                 other_idx_y_plus = 0;
               }
             else
@@ -99,20 +107,20 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
                 && atom_ids[other_idx_x_minus].find(idx_y) !=
                    atom_ids[other_idx_x_minus].end())
               {
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[other_idx_x_minus][idx_y]["top"],
                     atom_ids[idx_x][idx_y]["top"]));
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[other_idx_x_minus][idx_y]["bottom"],
                     atom_ids[idx_x][idx_y]["bottom"]));
               }
             if (atom_ids[idx_x].find(other_idx_y_minus) !=
                 atom_ids[idx_x].end())
               {
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[idx_x][other_idx_y_minus]["top"],
                     atom_ids[idx_x][idx_y]["top"]));
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[idx_x][other_idx_y_minus]["bottom"],
                     atom_ids[idx_x][idx_y]["bottom"]));
               }
@@ -122,7 +130,7 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
                 && atom_ids[other_idx_x_plus].find(other_idx_y_plus) !=
                    atom_ids[other_idx_x_plus].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[other_idx_x_plus][other_idx_y_plus]["top"],
                     atom_ids[idx_x][idx_y]["bottom"]));
               }
@@ -130,7 +138,7 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
                 && atom_ids[other_idx_x_plus].find(other_idx_y_minus) !=
                    atom_ids[other_idx_x_plus].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[other_idx_x_plus][other_idx_y_minus]["top"],
                     atom_ids[idx_x][idx_y]["bottom"]));
               }
@@ -138,7 +146,7 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
                 && atom_ids[other_idx_x_minus].find(other_idx_y_plus) !=
                    atom_ids[other_idx_x_minus].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[other_idx_x_minus][other_idx_y_plus]["top"],
                     atom_ids[idx_x][idx_y]["bottom"]));
               }
@@ -146,7 +154,7 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
                 && atom_ids[other_idx_x_minus].find(other_idx_y_minus) !=
                    atom_ids[other_idx_x_minus].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[other_idx_x_minus][other_idx_y_minus]["top"],
                     atom_ids[idx_x][idx_y]["bottom"]));
               }
@@ -169,7 +177,7 @@ bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count
           }
         for (auto it = charged_ids.begin(); it != charged_ids.end(); ++it)
           {
-            new_atoms[*it].q = -o.bead_charge;
+            new_atoms[*it].q = -bead_charge;
           }
       }
 

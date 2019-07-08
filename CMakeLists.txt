@@ -33,7 +33,6 @@ if (CMAKE_COMPILER_IS_GNUCXX)
             -g \
             -lm \
             -O3 \
-            -DDETAILED_OUTPUT \
             -DGENERAL_OUTPUT \
     ")
 endif (CMAKE_COMPILER_IS_GNUCXX)

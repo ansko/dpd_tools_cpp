@@ -10,20 +10,28 @@
 bool Structure::add_mmt_circular(OptionsParser &o, float x, float y, float z,
 size_t charged_count)
 {
+    float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
+    float bead_charge(o.get<float>("bead_charge"));
+    float platelet_closing(o.get<float>("platelet_closing"));
+    size_t platelet_radius(o.get<size_t>("platelet_radius"));
+    size_t mmt_atom_type(o.get<size_t>("mmt_atom_type"));
+    size_t mmt_edge_bond_type(o.get<size_t>("mmt_edge_bond_type"));
+    size_t mmt_diagonal_bond_type(o.get<size_t>("mmt_diagonal_bond_type"));
+
     // Print (or not) passed parameters of MMT addition
     #ifdef DETAILED_OUTPUT
         std::cout << "**********\n"
                   << "\nStructure.hpp add_mmt_circular input parameters:\n"
-                  << "\nplatelet_radius = " << o.platelet_radius
-                  << "\nbead_radius_clay = " << o.lj_bead_radius_clay
-                  << "\natom_type = " << o.mmt_atom_type
-                  << "\nmmt_edge_bond_type = " << o.mmt_edge_bond_type
-                  << "\nmmt_diagonal_bond_type = " << o.mmt_diagonal_bond_type
+                  << "\nplatelet_radius = " << platelet_radius
+                  << "\nbead_radius_clay = " << lj_bead_radius_clay
+                  << "\natom_type = " << mmt_atom_type
+                  << "\nmmt_edge_bond_type = " << mmt_edge_bond_type
+                  << "\nmmt_diagonal_bond_type = " << mmt_diagonal_bond_type
                   << "\nx = " << x
                   << "\ny = " << y
                   << "\nz = " << z
                   << "\ncharged_count = " << charged_count
-                  << "\nbead_charge = " << o.bead_charge
+                  << "\nbead_charge = " << bead_charge
                   << "\n**********\n";
     #endif
 
@@ -33,27 +41,29 @@ size_t charged_count)
 
     // Add atoms and bonds between top atom and neighboring bottom atom
     std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
-    for (int idxx = -(int)o.platelet_radius + 1; idxx < (int)o.platelet_radius;
+    for (int idxx = -(int)platelet_radius + 1; idxx < (int)platelet_radius;
          ++idxx)
       {
         atom_ids[idxx] = std::map<int, std::map<std::string, size_t> >();
-        float dx = idxx * 2 * o.lj_bead_radius_clay;
-        for (int idxy = -(int)o.platelet_radius + 1;
-             idxy < (int)o.platelet_radius; ++idxy)
+        float dx = idxx * 2 * lj_bead_radius_clay * platelet_closing;
+        for (int idxy = -(int)platelet_radius + 1;
+             idxy < (int)platelet_radius; ++idxy)
           {
-            if (pow(o.platelet_radius, 2) < pow(idxx, 2) + pow(idxy, 2))
+            if (pow(platelet_radius, 2) < pow(idxx, 2) + pow(idxy, 2))
               {
                 continue;
               }
             atom_ids[idxx][idxy] = std::map<std::string, size_t>();
-            float dy = idxy * 2 * o.lj_bead_radius_clay;
-            new_atoms.push_back(Atom(x + dx, y + dy, z - o.lj_bead_radius_clay,
-                0, o.mmt_atom_type, 0, 0, 0, "filler"));
+            float dy = idxy * 2 * lj_bead_radius_clay * platelet_closing;
+            new_atoms.push_back(Atom(x + dx, y + dy,
+                z - lj_bead_radius_clay*platelet_closing,
+                0, mmt_atom_type, 0, 0, 0, "filler"));
             atom_ids[idxx][idxy]["bottom"] = new_idx;
-            new_atoms.push_back(Atom(x + dx, y + dy, z + o.lj_bead_radius_clay,
-                0, o.mmt_atom_type, 0, 0, 0, "filler"));
+            new_atoms.push_back(Atom(x + dx, y + dy,
+                z + lj_bead_radius_clay*platelet_closing,
+                0, mmt_atom_type, 0, 0, 0, "filler"));
             atom_ids[idxx][idxy]["top"] = new_idx + 1;
-            new_bonds.push_back(Bond(o.mmt_edge_bond_type, new_idx,
+            new_bonds.push_back(Bond(mmt_edge_bond_type, new_idx,
                 new_idx + 1));
             new_idx += 2;
           }
@@ -70,20 +80,20 @@ size_t charged_count)
                 && atom_ids[itx->first - 1].find(ity->first) !=
                    atom_ids[itx->first - 1].end())
               {
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[itx->first - 1][ity->first]["top"],
                     atom_ids[itx->first][ity->first]["top"]));
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[itx->first - 1][ity->first]["bottom"],
                     atom_ids[itx->first][ity->first]["bottom"]));
               }
             if (atom_ids[itx->first].find(ity->first - 1) !=
                 atom_ids[itx->first].end())
               {
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[itx->first][ity->first - 1]["top"],
                     atom_ids[itx->first][ity->first]["top"]));
-                new_bonds.push_back(Bond(o.mmt_edge_bond_type,
+                new_bonds.push_back(Bond(mmt_edge_bond_type,
                     atom_ids[itx->first][ity->first - 1]["bottom"],
                     atom_ids[itx->first][ity->first]["bottom"]));
               }
@@ -92,7 +102,7 @@ size_t charged_count)
                 && atom_ids[itx->first - 1].find(ity->first - 1) !=
                    atom_ids[itx->first - 1].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[itx->first - 1][ity->first - 1]["top"],
                     atom_ids[itx->first][ity->first]["bottom"]));
               }
@@ -100,7 +110,7 @@ size_t charged_count)
                 && atom_ids[itx->first - 1].find(ity->first + 1) !=
                    atom_ids[itx->first - 1].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[itx->first - 1][ity->first + 1]["top"],
                     atom_ids[itx->first][ity->first]["bottom"]));
               }
@@ -108,7 +118,7 @@ size_t charged_count)
                 && atom_ids[itx->first + 1].find(ity->first - 1) !=
                    atom_ids[itx->first + 1].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[itx->first + 1][ity->first - 1]["top"],
                     atom_ids[itx->first][ity->first]["bottom"]));
               }
@@ -116,7 +126,7 @@ size_t charged_count)
                 && atom_ids[itx->first + 1].find(ity->first + 1) !=
                    atom_ids[itx->first + 1].end())
               {
-                new_bonds.push_back(Bond(o.mmt_diagonal_bond_type,
+                new_bonds.push_back(Bond(mmt_diagonal_bond_type,
                     atom_ids[itx->first + 1][ity->first + 1]["top"],
                     atom_ids[itx->first][ity->first]["bottom"]));
               }
@@ -139,7 +149,7 @@ size_t charged_count)
           }
         for (auto it = charged_ids.begin(); it != charged_ids.end(); ++it)
           {
-            new_atoms[*it].q = -o.bead_charge;
+            new_atoms[*it].q = -bead_charge;
           }
       }
 

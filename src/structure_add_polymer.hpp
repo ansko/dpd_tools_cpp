@@ -8,16 +8,24 @@
 // Add polymer to the system
 bool Structure::add_polymer(OptionsParser &o)
 {
+    float polymer_bond_length(o.get<float>("polymer_bond_length"));
+    float lj_bead_radius_soft(o.get<float>("lj_bead_radius_soft"));
+    float too_close_threshold_mmt(o.get<float>("too_close_threshold_mmt"));
+    float too_close_threshold_soft(o.get<float>("too_close_threshold_soft"));
+    size_t polymer_atom_type(o.get<size_t>("polymer_atom_type"));
+    size_t polymer_bond_type(o.get<size_t>("polymer_bond_type"));
+    size_t polymerization(o.get<size_t>("polymerization"));
+
     #ifdef DETAILED_OUTPUT  // Print parameters of polymer addition
         std::cout << "**********\n"
                   << "Structure.hpp add_polymer input parameters:\n"
-                  << "\npolymer_bond_length = " << o.polymer_bond_length
-                  << "\nlj_bead_radius = " << o.lj_bead_radius_soft
-                  << "\ntoo_close_threshold_mmt = " << o.too_close_threshold_mmt
-                  << "\ntoo_close_threshold_soft = " << o.too_close_threshold_soft
-                  << "\npolymer_atom_type = " << o.polymer_atom_type
-                  << "\npolymer_bond_type = " << o.polymer_bond_type
-                  << "\npolymerization = " << o.polymerization << std::endl;
+                  << "\npolymer_bond_length = " << polymer_bond_length
+                  << "\nlj_bead_radius = " << lj_bead_radius_soft
+                  << "\ntoo_close_threshold_mmt = " << too_close_threshold_mmt
+                  << "\ntoo_close_threshold_soft = " << too_close_threshold_soft
+                  << "\npolymer_atom_type = " << polymer_atom_type
+                  << "\npolymer_bond_type = " << polymer_bond_type
+                  << "\npolymerization = " << polymerization << std::endl;
     #endif
 
     srand(time(NULL));
@@ -29,11 +37,11 @@ bool Structure::add_polymer(OptionsParser &o)
     size_t fails_allowed = 500;
     std::vector<Atom> new_atoms;
     std::vector<Bond> new_bonds;
-    float close_r_sq_mmt = pow(o.too_close_threshold_mmt, 2)
-        * pow(o.lj_bead_radius_soft, 2);
-    float close_r_sq_soft = pow(o.too_close_threshold_soft, 2)
-        * pow(o.lj_bead_radius_soft, 2);
-    while (fails_done < fails_allowed && new_atoms.size() != o.polymerization)
+    float close_r_sq_mmt = pow(too_close_threshold_mmt, 2)
+        * pow(lj_bead_radius_soft, 2);
+    float close_r_sq_soft = pow(too_close_threshold_soft, 2)
+        * pow(lj_bead_radius_soft, 2);
+    while (fails_done < fails_allowed && new_atoms.size() != polymerization)
       {
         float x;
         float y;
@@ -57,7 +65,7 @@ bool Structure::add_polymer(OptionsParser &o)
         float phi_coeff = (float)(rand()) / (float)(RAND_MAX);
         float theta = theta_coeff * M_PI;
         float phi = phi_coeff * 2*M_PI;
-        float r = o.polymer_bond_length * o.lj_bead_radius_soft;
+        float r = polymer_bond_length * lj_bead_radius_soft;
         x += r * sin(theta) * cos(phi);
         y += r * sin(theta) * sin(phi);
         z += r * cos(theta);
@@ -100,10 +108,10 @@ bool Structure::add_polymer(OptionsParser &o)
             fails_done++;
             continue;
           }
-        new_atoms.push_back(Atom(x, y, z, 0, o.polymer_atom_type, 0, 0, 0,
+        new_atoms.push_back(Atom(x, y, z, 0, polymer_atom_type, 0, 0, 0,
             "polymer"));
       }
-    if (new_atoms.size() != o.polymerization)
+    if (new_atoms.size() != polymerization)
       {
         return false;
       }
@@ -113,13 +121,13 @@ bool Structure::add_polymer(OptionsParser &o)
         if (idx < new_atoms.size() - 1)
           {
             this->_bonds[this->_bonds_count + 1 + idx] = Bond(
-                o.polymer_bond_type,
+                polymer_bond_type,
                 this->_atoms_count + 1 + idx,
                 this->_atoms_count + 1 + idx + 1); 
           }
       }
-    this->_atoms_count += o.polymerization;
-    this->_bonds_count += o.polymerization - 1;
+    this->_atoms_count += polymerization;
+    this->_bonds_count += polymerization - 1;
 
     return true;
 }

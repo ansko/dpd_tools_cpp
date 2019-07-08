@@ -38,17 +38,18 @@ void threading_function(size_t thread_idx, Structure &s,
     size_t nx, size_t ny, size_t nz, size_t polymers_count)
 {
     std::array<size_t, 3> idcs3d = one2three(thread_idx, nx, ny, nz);
+    size_t polymerization(o.get<float>("polymerization"));
     size_t idx_x = idcs3d[0];
     size_t idx_y = idcs3d[1];
     size_t idx_z = idcs3d[2];
     size_t polymers_done = 0;
     size_t polymers_fails_done = 0;
-    size_t polymers_fails_allowed = polymers_count * o.polymerization;
+    size_t polymers_fails_allowed = polymers_count * polymerization;
 
     while (polymers_done < polymers_count
            && polymers_fails_done < polymers_fails_allowed)
       {
-        #ifdef DETAILED_OUTPUT  // Information about thread's last step
+        #ifdef GENERAL_OUTPUT  // Information about thread's last step
         if (polymers_done % (size_t(polymers_count / 10)) == 0)
           {
             std::cout << thread_idx << " "
@@ -88,21 +89,36 @@ int main()
     #endif
 
     // Compute general parameters
-    float real_mmt_bead_d(o.real_r_c * 2*o.lj_bead_radius_clay);
+    float platelet_closing(o.get<float>("platelet_closing"));
+    float real_r_c(o.get<float>("real_r_c"));
+    float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
+    float real_interlayer(o.get<float>("real_interlayer"));
+    float dpd_rho(o.get<float>("dpd_rho"));
+    float planar_expansion_coeff(o.get<float>("planar_expansion_coeff"));
+    size_t platelet_radius(o.get<size_t>("platelet_radius"));
+    size_t stacking(o.get<size_t>("stacking"));
+    size_t modifiers_count_preset(o.get<size_t>("modifiers_count_preset"));
+    size_t tail_length(o.get<size_t>("tail_length"));
+    size_t polymerization(o.get<size_t>("polymerization"));
+    size_t threads_nx(o.get<size_t>("threads_nx"));
+    size_t threads_ny(o.get<size_t>("threads_ny"));
+    size_t threads_nz(o.get<size_t>("threads_nz"));
 
     // Compute modifiers count per one lamella:
-    float real_mmt_area = M_PI * pow(o.platelet_radius * real_mmt_bead_d, 2);
+    float real_mmt_bead_d(real_r_c * 2*lj_bead_radius_clay * platelet_closing);
+    //float real_mmt_bead_d(real_r_c * 2*lj_bead_radius_clay);
+    float real_mmt_area = M_PI * pow(platelet_radius * real_mmt_bead_d, 2);
 
     size_t charged_count;
     std::string modifier_count_taken_from;
-    if (!o.modifiers_count_preset)
+    if (!modifiers_count_preset)
       {
-        charged_count = 0.015 * real_mmt_area * o.stacking;
+        charged_count = 0.015 * real_mmt_area * stacking;
         modifier_count_taken_from = "CEC";
       }
     else
       {
-        charged_count = o.modifiers_count_preset;
+        charged_count = modifiers_count_preset;
         modifier_count_taken_from = "options";
       }
 
@@ -117,16 +133,16 @@ int main()
     #endif
 
     // Compute interlayer based on modifiers size and count
-    float lj_mmt_area = real_mmt_area / o.real_r_c / o.real_r_c;
-    float lj_volume = (o.tail_length + 1) * charged_count * o.dpd_rho;
+    float lj_mmt_area = real_mmt_area / real_r_c / real_r_c;
+    float lj_volume = (tail_length + 1) * charged_count * dpd_rho;
     float lj_interlayer = lj_volume / lj_mmt_area;
 
     // Compute box size
-    float min_height = o.real_interlayer * o.stacking
-        + 2 * real_mmt_bead_d * o.stacking;
-    float min_width = 2*o.platelet_radius * real_mmt_bead_d
-        * float(o.planar_expansion_coeff);
-    float cube_edge = std::max(min_width, min_height) / o.real_r_c;
+    float min_height = real_interlayer * stacking
+        + 2 * real_mmt_bead_d * stacking;
+    float min_width = 2*platelet_radius * real_mmt_bead_d
+        * float(planar_expansion_coeff);
+    float cube_edge = std::max(min_width, min_height) / real_r_c;
 
     #ifdef DETAILED_OUTPUT  // Print box infomation
       {
@@ -141,13 +157,13 @@ int main()
 
     // Adjust polymers count:
     float lj_cell_volume = pow(cube_edge, 3);
-    size_t all_beads_count = o.dpd_rho * lj_cell_volume;
-    size_t mmt_beads_count = 2 * size_t(M_PI * pow(o.platelet_radius, 2));
-    size_t single_mod_beads_count = 1 + o.tail_length;
+    size_t all_beads_count = dpd_rho * lj_cell_volume;
+    size_t mmt_beads_count = 2 * size_t(M_PI * pow(platelet_radius, 2));
+    size_t single_mod_beads_count = 1 + tail_length;
     size_t all_mods_beads_count = single_mod_beads_count * charged_count;
-    size_t single_polymer_beads_count = o.polymerization;
+    size_t single_polymer_beads_count = polymerization;
     size_t polymers_count = round((all_beads_count
-        -mmt_beads_count - all_mods_beads_count) / o.polymerization);
+        -mmt_beads_count - all_mods_beads_count) / polymerization);
 
     #ifdef DETAILED_OUTPUT  // Print polymer addition parameters
       {
@@ -172,15 +188,15 @@ int main()
     s.zhi = cube_edge/2;
 
     // Add MMT stack
-    size_t half_stacking = o.stacking / 2;
-    size_t part_charged_count = charged_count / o.stacking;
+    size_t half_stacking = stacking / 2;
+    size_t part_charged_count = charged_count / stacking;
     size_t charged_mmt_done = 0;
-    float dz = lj_interlayer / 2 + 2*o.lj_bead_radius_clay;
-    if (o.stacking % 2 != 0)
+    float dz = lj_interlayer / 2 + 2*lj_bead_radius_clay;
+    if (stacking % 2 != 0)
       {
         bool status = s.add_mmt_circular(o, 0, 0, 0, part_charged_count);
         charged_mmt_done += part_charged_count;
-        dz = lj_interlayer + 4 * o.lj_bead_radius_clay;
+        dz = lj_interlayer + 4 * lj_bead_radius_clay;
       }
     for (size_t idx = 0; idx < half_stacking; ++idx)
       {
@@ -203,7 +219,7 @@ int main()
         bool status = s.add_mmt_circular(o, 0, 0, dz, part_charged_count1);
         charged_mmt_done += part_charged_count1;
         status = s.add_mmt_circular(o, 0, 0, -dz, part_charged_count2);
-        dz += lj_interlayer + 4 * o.lj_bead_radius_clay;
+        dz += lj_interlayer + 4 * lj_bead_radius_clay;
         charged_mmt_done += part_charged_count2;
       }
     size_t mmt_atoms = s.atoms().size();
@@ -220,8 +236,8 @@ int main()
     #ifdef PARTIAL_DATAFILES
       {
         std::string data_out_fname("incomlete_parallel_isolated_mmt");
-        data_out_fname += "_r" + std::to_string(o.platelet_radius);
-        data_out_fname += "_n" + std::to_string(o.stacking);
+        data_out_fname += "_r" + std::to_string(platelet_radius);
+        data_out_fname += "_n" + std::to_string(stacking);
         data_out_fname += ".data";
         write_data(data_out_fname, s);
       }
@@ -229,12 +245,12 @@ int main()
 
     // Add modifiers
     std::vector<std::pair<float, float> > galleries;
-    if (o.stacking % 2 == 0)
+    if (stacking % 2 == 0)
       {
         for (size_t idx = 0; idx < half_stacking; ++idx)
           {
             float top = lj_interlayer / 2
-                + idx * (lj_interlayer + 4 * o.lj_bead_radius_clay);
+                + idx * (lj_interlayer + 4 * lj_bead_radius_clay);
             galleries.push_back(std::pair<float, float>(top - lj_interlayer, top));
           }
       }
@@ -242,8 +258,8 @@ int main()
       {
         for (size_t idx = 0; idx < half_stacking; ++idx)
           {
-            float top = lj_interlayer + 2 * o.lj_bead_radius_clay
-                + idx * (lj_interlayer + 4 * o.lj_bead_radius_clay);
+            float top = lj_interlayer + 2 * lj_bead_radius_clay
+                + idx * (lj_interlayer + 4 * lj_bead_radius_clay);
             galleries.push_back(std::pair<float, float>(top - lj_interlayer, top));
           }
       }
@@ -300,19 +316,19 @@ int main()
     #ifdef PARTIAL_DATAFILES
       {
         std::string data_out_fname("incomplete_parallel_isolated_mmt");
-        data_out_fname += "_r" + std::to_string(o.platelet_radius);
-        data_out_fname += "_n" + std::to_string(o.stacking);
+        data_out_fname += "_r" + std::to_string(platelet_radius);
+        data_out_fname += "_n" + std::to_string(stacking);
         data_out_fname += "_mod_n" + std::to_string(modifiers_done);
-        data_out_fname += "_tail" + std::to_string(o.tail_length);
+        data_out_fname += "_tail" + std::to_string(tail_length);
         data_out_fname += ".data";
         write_data(data_out_fname, s);
       }
     #endif
 
     // Parallelism with polymers starts here
-    size_t nx = o.threads_nx;
-    size_t ny = o.threads_ny;
-    size_t nz = o.threads_nz;
+    size_t nx = threads_nx;
+    size_t ny = threads_ny;
+    size_t nz = threads_nz;
 
     std::vector<std::thread> my_threads;
     for (size_t idx_x = 0; idx_x < nx; ++idx_x)
@@ -336,7 +352,7 @@ int main()
     // This part adds left chains in not-parallel regime,
     // since this count should be small.
     size_t polymer_atoms = s.atoms().size() - mmt_atoms - modifier_atoms;
-    size_t polymers_done = polymer_atoms / o.polymerization;
+    size_t polymers_done = polymer_atoms / polymerization;
     if (polymers_done < polymers_count)
       {
         std::cout << "Not all polymers were added parallely, correcting...\n";
@@ -377,11 +393,11 @@ int main()
     #endif
 
     std::string data_out_fname("parallel_isolated_mmt");
-    data_out_fname += "_r" + std::to_string(o.platelet_radius);
-    data_out_fname += "_n" + std::to_string(o.stacking);
+    data_out_fname += "_r" + std::to_string(platelet_radius);
+    data_out_fname += "_n" + std::to_string(stacking);
     data_out_fname += "_mod_n" + std::to_string(modifiers_done);
-    data_out_fname += "_tail" + std::to_string(o.tail_length);
-    data_out_fname += "_poly_p" + std::to_string(o.polymerization);
+    data_out_fname += "_tail" + std::to_string(tail_length);
+    data_out_fname += "_poly_p" + std::to_string(polymerization);
     data_out_fname += "_n" + std::to_string(polymers_done);
     data_out_fname += ".data";
     write_data(data_out_fname, s);
@@ -411,7 +427,7 @@ int main()
       {
         float DPD_rho = float(s.atoms().size())
             / (s.xhi-s.xlo) / (s.yhi-s.ylo) / (s.zhi-s.zlo);
-        float CEC(93 * 90*84/real_mmt_area * modifiers_done/108 / o.stacking);
+        float CEC(93 * 90*84/real_mmt_area * modifiers_done/108 / stacking);
         std::cout << "Physical parameters:\n"
             << "\tDPD_rho (numerical): " << DPD_rho
             << "\n\tCEC: " << CEC << std::endl;

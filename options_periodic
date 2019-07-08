@@ -4,6 +4,9 @@ mmt_real_thickness 8
 # Edge length of MMT platelets in beads if periodic algorithm is used
 platelet_edge 5
 
+# Decreasing MMT bonds for platelets to be denser and push away from each other
+platelet_closing 0.5
+
 # Length of the modifier tail in beads
 tail_length 2
 

@@ -1,5 +1,3 @@
-# Test created structure of MMT and modifier
-
 units         lj
 comm_modify   vel yes
 newton        on
@@ -9,39 +7,27 @@ bond_style    harmonic
 neighbor      3 bin
 neigh_modify  delay 0 every 1 check no page 500000000 one 50000000
 
-read_data    periodic_mmt_edge20_mod_n4_tail2_poly_p10_n202.data
-#read_restart dpd_r.32000.restart
+read_data    parallel_isolated_mmt_r10_n2_mod_n10_tail5_poly_p10_n387.data
 
-mass          1 1
-mass          2 1.74
-mass          3 1.74
-mass          4 1.74
+mass          * 1
 
-# n alpha_C cutoff
-# n==0 - ok
-# alpha == 1 - ok1
-# cutoff == ...
 pair_style    hybrid/overlay coul/cut/soft 2 1 5 dpd 1 2 6668635
 
 pair_coeff    1 1 dpd 100 5 0.46
-pair_coeff    1 2 dpd 100 5 0.64
+pair_coeff    1 2 dpd 100 5 0.796743
 pair_coeff    1 3 dpd 100 5 0.64
 pair_coeff    1 4 dpd 100 5 0.64
-pair_coeff    2 2 dpd 37.8 5 0.7
-pair_coeff    2 3 dpd 37.8 5 0.7
-pair_coeff    2 4 dpd 32 5 0.7
-pair_coeff    3 3 dpd 25 5 0.7
-pair_coeff    3 4 dpd 32.5 5 0.7
-pair_coeff    4 4 dpd 25 5 0.7
+pair_coeff    2 2 dpd 50 5 0.7
+pair_coeff    2 3 dpd 50 5 0.7
+pair_coeff    2 4 dpd 50 5 0.7
+pair_coeff    3 3 dpd 50 5 0.7
+pair_coeff    3 4 dpd 25 5 0.7
+pair_coeff    4 4 dpd 50 5 0.7
 
-#pair_coeff    * * coul/cut
-
-# lambda: 0 < lambda < 1
-# 0.5 ok
 pair_coeff    * * coul/cut/soft 0.1
 
-bond_coeff    1 100 0.92
-bond_coeff    2 100 1.59
+bond_coeff    1 1000 0.46
+bond_coeff    2 1000 1.13
 bond_coeff    3 10 1.4
 bond_coeff    4 10 1.4
 bond_coeff    5 10 1.4
@@ -49,14 +35,15 @@ bond_coeff    5 10 1.4
 thermo        10
 thermo_style  custom step density press pe ebond ecoul evdwl lz
 
-group         charged id 1:812
-group         soft_rared id 813:2832:10
-group         imagable union charged soft_rared
+group         charged id 1:2152
+group         soft_rared id 2153:505212:1000
+#group         imagable union charged soft_rared
+group         imagable id 1:1000
 
 dump          d1 imagable image 10 images_dump/*.jpg type type view 90 0
 
 timestep      0.01
-fix           1 all nvt temp 1 1 10000
+fix           1 all npt x 30 30 1000 y 30 30 1000 z 30 30 1000 temp 1 1 10000
 
 label loop
 variable a loop 100
