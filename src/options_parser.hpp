@@ -40,6 +40,11 @@ public:
 
     template <typename T> T get(std::string option_name)
       {
+        if (this->options_.find(option_name) == this->options_.end())
+          {
+            std::cout << "Request for not existing option!";
+            throw "Request for not existing option!";
+          }
         return T(this->options_[option_name]);
       };
 

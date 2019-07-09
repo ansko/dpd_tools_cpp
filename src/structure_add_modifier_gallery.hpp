@@ -13,9 +13,11 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
     float modifier_tail_tail_bond_length(o.get<float>(
         "modifier_tail_tail_bond_length"));
     float lj_bead_radius_soft(o.get<float>("lj_bead_radius_soft"));
+    float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
     float too_close_threshold_mmt(o.get<float>("too_close_threshold_mmt"));
     float too_close_threshold_soft(o.get<float>("too_close_threshold_soft"));
     float bead_charge(o.get<float>("bead_charge"));
+    float platelet_closing(o.get<float>("platelet_closing"));
     size_t tail_length(o.get<size_t>("tail_length"));
     size_t modifier_head_atom_type(o.get<size_t>("modifier_head_atom_type"));
     size_t modifier_tail_atom_type(o.get<size_t>("modifier_tail_atom_type"));
@@ -49,6 +51,8 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
     float ly = this->yhi - this->ylo;
     float lz = this->zhi - this->zlo;
     float r_platelet = platelet_radius*2;
+    float r_platelet_lj = (2 * platelet_radius * platelet_closing)
+        * lj_bead_radius_clay;
     float interlayer = top - bottom;
     size_t fails_done = 0;
 
@@ -75,8 +79,8 @@ bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
             //y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
             //x = this->xlo + lx/2 + lx/4 * x_coeff;  // planar coeff == 2
             //y = this->ylo + ly/2 + ly/4 * y_coeff;
-            x = this->xlo + lx/2 + r_platelet * cos(alpha);
-            y = this->ylo + ly/2 + r_platelet * sin(alpha);
+            x = this->xlo + lx/2 + r_platelet_lj * cos(alpha);
+            y = this->ylo + ly/2 + r_platelet_lj * sin(alpha);
             z = bottom + interlayer * z_coeff;
           }
         else
