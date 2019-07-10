@@ -92,7 +92,6 @@ int main()
     float platelet_closing(o.get<float>("platelet_closing"));
     float real_r_c(o.get<float>("real_r_c"));
     float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
-    float real_interlayer(o.get<float>("real_interlayer"));
     float dpd_rho(o.get<float>("dpd_rho"));
     float planar_expansion_coeff(o.get<float>("planar_expansion_coeff"));
     size_t platelet_radius(o.get<size_t>("platelet_radius"));
@@ -106,7 +105,6 @@ int main()
 
     // Compute modifiers count per one lamella:
     float real_mmt_bead_d(real_r_c * 2*lj_bead_radius_clay * platelet_closing);
-    //float real_mmt_bead_d(real_r_c * 2*lj_bead_radius_clay);
     float real_mmt_area = M_PI * pow(platelet_radius * real_mmt_bead_d, 2);
 
     size_t charged_count;
@@ -134,8 +132,9 @@ int main()
 
     // Compute interlayer based on modifiers size and count
     float lj_mmt_area = real_mmt_area / real_r_c / real_r_c;
-    float lj_volume = (tail_length + 1) * charged_count * dpd_rho;
+    float lj_volume = (tail_length + 1) * charged_count / dpd_rho;
     float lj_interlayer = lj_volume / lj_mmt_area;
+    float real_interlayer(lj_interlayer * real_r_c);
 
     // Compute box size
     float min_height = real_interlayer * stacking
