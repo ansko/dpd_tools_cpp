@@ -7,9 +7,15 @@
 
 // Add an "infinite" (because of periodic boundary conditions) MMT platelet
 // into existing Structure (==*this)
-bool Structure::add_mmt_circular(OptionsParser &o, float x, float y, float z,
-size_t charged_count)
+bool Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
 {
+    // Unpacking 
+    OptionsParser o = parameters.o;
+    float x = parameters.x;
+    float y = parameters.y;
+    float z = parameters.z;
+    size_t charged_count = parameters.charged_count;
+
     float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
     float bead_charge(o.get<float>("bead_charge"));
     float platelet_closing(o.get<float>("platelet_closing"));

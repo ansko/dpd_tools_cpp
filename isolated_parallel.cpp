@@ -56,7 +56,9 @@ void threading_function(size_t thread_idx, Structure &s,
           }
         #endif
 
-        bool status = s.add_polymer_parallel(o, idx_x, nx, idx_y, ny, idx_z, nz);
+        AddPolymerParallelParameters parameters(
+            o, idx_x, nx, idx_y, ny, idx_z, nz);
+        bool status = s.add_polymer_parallel(parameters);
         if (status)
           {
             polymers_done++;
@@ -192,7 +194,8 @@ int main()
     float dz = lj_interlayer / 2 + 2*lj_bead_radius_clay;
     if (stacking % 2 != 0)
       {
-        bool status = s.add_mmt_circular(o, 0, 0, 0, part_charged_count);
+        AddMmtCircularParameters parameters(o, 0, 0, 0, part_charged_count);
+        bool status = s.add_mmt_circular(parameters);
         charged_mmt_done += part_charged_count;
         dz = lj_interlayer + 4 * lj_bead_radius_clay;
       }
@@ -214,9 +217,11 @@ int main()
                 part_charged_count2 = charged_mmt_left - part_charged_count1;
               }
           }
-        bool status = s.add_mmt_circular(o, 0, 0, dz, part_charged_count1);
+        AddMmtCircularParameters parameters_top(o, 0, 0, dz, part_charged_count1);
+        bool status = s.add_mmt_circular(parameters_top);
         charged_mmt_done += part_charged_count1;
-        status = s.add_mmt_circular(o, 0, 0, -dz, part_charged_count2);
+        AddMmtCircularParameters parameters_bot(o, 0, 0, -dz, part_charged_count2);
+        status = s.add_mmt_circular(parameters_bot);
         dz += lj_interlayer + 4 * lj_bead_radius_clay;
         charged_mmt_done += part_charged_count2;
       }
@@ -281,7 +286,8 @@ int main()
         size_t idx = rand() % galleries.size();
         float bottom = galleries[idx].first;
         float top = galleries[idx].second;
-        bool status = s.add_modifier_gallery(o, top, bottom);
+        AddModifierGalleryParameters parameters(o, top, bottom);
+        bool status = s.add_modifier_gallery(parameters);
         if (status)
           {
             modifiers_done++;

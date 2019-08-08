@@ -6,8 +6,14 @@
 
 
 // Add an isolated MMT platelet
-bool Structure::add_mmt_periodic(OptionsParser &o, float z, size_t charged_count)
+bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
+//OptionsParser &o, float z, size_t charged_count)
 {
+    // Unpacking
+    OptionsParser o = parameters.o;
+    float z = parameters.z;
+    size_t charged_count = parameters.charged_count;
+
     float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
     float bead_charge(o.get<float>("bead_charge"));
     size_t platelet_edge(o.get<size_t>("platelet_edge"));

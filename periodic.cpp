@@ -6,9 +6,6 @@
 
 
 #include "src/options_parser.hpp"
-#include "src/structure_add_mmt_periodic.hpp"
-#include "src/structure_add_modifier_gallery.hpp"
-#include "src/structure_add_polymer.hpp"
 #include "src/write_data.hpp"
 
 
@@ -32,8 +29,6 @@ int main()
     size_t tail_length(o.get<size_t>("tail_length"));
     size_t polymerization(o.get<size_t>("polymerization"));
     size_t modifiers_count_preset(o.get<size_t>("modifiers_count_preset"));
-    size_t stacking(o.get<size_t>("stacking"));
-    size_t platelet_radius(o.get<size_t>("platelet_radius"));
 
     #ifdef DETAILED_OUTPUT  // Print all read options
       {
@@ -82,6 +77,7 @@ int main()
             << "\tpolymerization: " << polymerization << " [beads]\n";
         return 0;
       }
+
 
     // Compute modifiers count per one lamella:
     float mmt_real_edge = real_r_c * 2*lj_bead_radius_clay * platelet_edge;
@@ -139,7 +135,6 @@ int main()
     size_t polymers_count = round((all_beads_count
         -mmt_beads_count - all_mods_beads_count) / polymerization);
 
-
     #ifdef DETAILED_OUTPUT  // Print information about polymers
       {
         std::cout << "**********\n";
@@ -164,7 +159,8 @@ int main()
 
     // Add single MMT platelet
     // TODO: adjustable bead charge
-    bool status = s.add_mmt_periodic(o, 0, charged_count);
+    AddMmtPeriodicParameters parameters(o, 0, charged_count);
+    bool status = s.add_mmt_periodic(parameters);
     size_t mmt_atoms = s.atoms().size();
 
     #ifdef DETAILED_OUTPUT  // Print information about mmt addition status
@@ -188,6 +184,8 @@ int main()
       }
     #endif
 
+    std::cout << "7\n";
+
     // Add modifiers
     size_t modifiers_done = 0;
     size_t modifiers_fails_done = 0;
@@ -206,7 +204,8 @@ int main()
           }
         #endif
 
-        bool status = s.add_modifier_gallery(o, xy_size/2, -xy_size/2);
+        AddModifierGalleryParameters parameters(o, xy_size/2, -xy_size/2);
+        bool status = s.add_modifier_gallery(parameters);
         if (status)
           {
             modifiers_done++;
@@ -217,6 +216,8 @@ int main()
           }
       }
     size_t modifier_atoms = s.atoms().size() - mmt_atoms;
+
+    std::cout << "8\n";
 
     #ifdef DETAILED_OUTPUT  // Print overall information about modifier addition
       {

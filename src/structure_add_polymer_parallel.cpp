@@ -11,9 +11,17 @@
 //     0 <= idx_x < nx
 //     0 <= idx_y < ny
 //     0 <= idx_z < nz
-bool Structure::add_polymer_parallel(OptionsParser &o, size_t idx_x, size_t nx,
-size_t idx_y, size_t ny, size_t idx_z, size_t nz)
+bool Structure::add_polymer_parallel(AddPolymerParallelParameters &parameters)
 {
+    // Unpacking parameters
+    OptionsParser o = parameters.o;
+    size_t idx_x = parameters.idx_x;
+    size_t nx = parameters.nx;
+    size_t idx_y = parameters.idx_y;
+    size_t ny = parameters.ny;
+    size_t idx_z = parameters.idx_z;
+    size_t nz = parameters.nz;
+
     srand(time(NULL));
     float lx = (this->xhi - this->xlo) / nx;
     float ly = (this->yhi - this->ylo) / ny;

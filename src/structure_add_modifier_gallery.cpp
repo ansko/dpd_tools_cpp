@@ -6,8 +6,13 @@
 
 
 // Add modifier into the space sconstrained by z = top and z = bottom
-bool Structure::add_modifier_gallery(OptionsParser &o, float top, float bottom)
+bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
 {
+    // Unpacking
+    OptionsParser o = parameters.o;
+    float top = parameters.top;
+    float bottom = parameters.bottom;
+
     float modifier_head_tail_bond_length(o.get<float>(
         "modifier_head_tail_bond_length"));
     float modifier_tail_tail_bond_length(o.get<float>(
