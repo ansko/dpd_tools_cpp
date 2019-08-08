@@ -9,26 +9,24 @@
 bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
 {
     // Unpacking
-    OptionsParser o = parameters.o;
     float top = parameters.top;
     float bottom = parameters.bottom;
-
-    float modifier_head_tail_bond_length(o.get<float>(
-        "modifier_head_tail_bond_length"));
-    float modifier_tail_tail_bond_length(o.get<float>(
-        "modifier_tail_tail_bond_length"));
-    float lj_bead_radius_soft(o.get<float>("lj_bead_radius_soft"));
-    float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
-    float too_close_threshold_mmt(o.get<float>("too_close_threshold_mmt"));
-    float too_close_threshold_soft(o.get<float>("too_close_threshold_soft"));
-    float bead_charge(o.get<float>("bead_charge"));
-    float platelet_closing(o.get<float>("platelet_closing"));
-    size_t tail_length(o.get<size_t>("tail_length"));
-    size_t modifier_head_atom_type(o.get<size_t>("modifier_head_atom_type"));
-    size_t modifier_tail_atom_type(o.get<size_t>("modifier_tail_atom_type"));
-    size_t head_tail_type(o.get<size_t>("head_tail_type"));
-    size_t tail_tail_type(o.get<size_t>("tail_tail_type"));
-    size_t platelet_radius(o.get<size_t>("platelet_radius"));
+    float modifier_head_tail_bond_length
+        = parameters.modifier_head_tail_bond_length;
+    float modifier_tail_tail_bond_length
+        = parameters.modifier_tail_tail_bond_length;
+    float lj_bead_radius_soft = parameters.lj_bead_radius_soft;
+    float lj_bead_radius_clay = parameters.lj_bead_radius_clay;
+    float too_close_threshold_mmt = parameters.too_close_threshold_mmt;
+    float too_close_threshold_soft = parameters.too_close_threshold_soft;
+    float bead_charge = parameters.bead_charge;
+    float platelet_closing = parameters.platelet_closing;
+    size_t tail_length = parameters.tail_length;
+    size_t modifier_head_atom_type = parameters.modifier_head_atom_type;
+    size_t modifier_tail_atom_type = parameters.modifier_tail_atom_type;
+    size_t head_tail_type = parameters.head_tail_type;
+    size_t tail_tail_type = parameters.tail_tail_type;
+    size_t platelet_radius = parameters.platelet_radius;
 
     #ifdef DETAILED_OUTPUT  // Parameters of modifier addition
         std::cout << "**********\n"

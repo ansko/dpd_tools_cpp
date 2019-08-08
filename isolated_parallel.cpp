@@ -375,7 +375,8 @@ int main()
                 std::cout << "**********\n";
               }
             #endif
-            bool status = s.add_polymer(o);
+            AddPolymerParameters parameters(o);
+            bool status = s.add_polymer(parameters);
             if (status)
               {
                 polymers_done++;

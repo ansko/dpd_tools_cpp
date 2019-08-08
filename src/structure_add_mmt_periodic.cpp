@@ -10,16 +10,14 @@ bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
 //OptionsParser &o, float z, size_t charged_count)
 {
     // Unpacking
-    OptionsParser o = parameters.o;
     float z = parameters.z;
     size_t charged_count = parameters.charged_count;
-
-    float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
-    float bead_charge(o.get<float>("bead_charge"));
-    size_t platelet_edge(o.get<size_t>("platelet_edge"));
-    size_t mmt_atom_type(o.get<size_t>("mmt_atom_type"));
-    size_t mmt_edge_bond_type(o.get<size_t>("mmt_edge_bond_type"));
-    size_t mmt_diagonal_bond_type(o.get<size_t>("mmt_diagonal_bond_type"));
+    float lj_bead_radius_clay = parameters.lj_bead_radius_clay;
+    float bead_charge = parameters.bead_charge;
+    size_t platelet_edge = parameters.platelet_edge;
+    size_t mmt_atom_type = parameters.mmt_atom_type;
+    size_t mmt_edge_bond_type = parameters.mmt_edge_bond_type;
+    size_t mmt_diagonal_bond_type = parameters.mmt_diagonal_bond_type;
 
 
     #ifdef DETAILED_OUTPUT  // Print parameters of MMT addition

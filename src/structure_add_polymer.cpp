@@ -6,15 +6,15 @@
 
 
 // Add polymer to the system
-bool Structure::add_polymer(OptionsParser &o)
+bool Structure::add_polymer(AddPolymerParameters &parameters)
 {
-    float polymer_bond_length(o.get<float>("polymer_bond_length"));
-    float lj_bead_radius_soft(o.get<float>("lj_bead_radius_soft"));
-    float too_close_threshold_mmt(o.get<float>("too_close_threshold_mmt"));
-    float too_close_threshold_soft(o.get<float>("too_close_threshold_soft"));
-    size_t polymer_atom_type(o.get<size_t>("polymer_atom_type"));
-    size_t polymer_bond_type(o.get<size_t>("polymer_bond_type"));
-    size_t polymerization(o.get<size_t>("polymerization"));
+    float polymer_bond_length = parameters.polymer_bond_length;
+    float lj_bead_radius_soft = parameters.lj_bead_radius_soft;
+    float too_close_threshold_mmt = parameters.too_close_threshold_mmt;
+    float too_close_threshold_soft = parameters.too_close_threshold_soft;
+    size_t polymer_atom_type = parameters.polymer_atom_type;
+    size_t polymer_bond_type = parameters.polymer_bond_type;
+    size_t polymerization = parameters.polymerization;
 
     #ifdef DETAILED_OUTPUT  // Print parameters of polymer addition
         std::cout << "**********\n"

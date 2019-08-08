@@ -10,19 +10,17 @@
 bool Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
 {
     // Unpacking 
-    OptionsParser o = parameters.o;
     float x = parameters.x;
     float y = parameters.y;
     float z = parameters.z;
     size_t charged_count = parameters.charged_count;
-
-    float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
-    float bead_charge(o.get<float>("bead_charge"));
-    float platelet_closing(o.get<float>("platelet_closing"));
-    size_t platelet_radius(o.get<size_t>("platelet_radius"));
-    size_t mmt_atom_type(o.get<size_t>("mmt_atom_type"));
-    size_t mmt_edge_bond_type(o.get<size_t>("mmt_edge_bond_type"));
-    size_t mmt_diagonal_bond_type(o.get<size_t>("mmt_diagonal_bond_type"));
+    float lj_bead_radius_clay(parameters.lj_bead_radius_clay);
+    float bead_charge(parameters.bead_charge);
+    float platelet_closing(parameters.platelet_closing);
+    size_t platelet_radius(parameters.platelet_radius);
+    size_t mmt_atom_type(parameters.mmt_atom_type);
+    size_t mmt_edge_bond_type(parameters.mmt_edge_bond_type);
+    size_t mmt_diagonal_bond_type(parameters.mmt_diagonal_bond_type);
 
     // Print (or not) passed parameters of MMT addition
     #ifdef DETAILED_OUTPUT

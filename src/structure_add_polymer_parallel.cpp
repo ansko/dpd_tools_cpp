@@ -14,13 +14,20 @@
 bool Structure::add_polymer_parallel(AddPolymerParallelParameters &parameters)
 {
     // Unpacking parameters
-    OptionsParser o = parameters.o;
     size_t idx_x = parameters.idx_x;
     size_t nx = parameters.nx;
     size_t idx_y = parameters.idx_y;
     size_t ny = parameters.ny;
     size_t idx_z = parameters.idx_z;
     size_t nz = parameters.nz;
+
+    float polymer_bond_length = parameters.polymer_bond_length;
+    float lj_bead_radius_soft = parameters.lj_bead_radius_soft;
+    float too_close_threshold_mmt = parameters.too_close_threshold_mmt;
+    float too_close_threshold_soft = parameters.too_close_threshold_soft;
+    size_t polymer_atom_type = parameters.polymer_atom_type;
+    size_t polymer_bond_type = parameters.polymer_bond_type;
+    size_t polymerization = parameters.polymerization;
 
     srand(time(NULL));
     float lx = (this->xhi - this->xlo) / nx;
@@ -33,14 +40,6 @@ bool Structure::add_polymer_parallel(AddPolymerParallelParameters &parameters)
     float my_zlo = this->zlo + lz * idx_z;
     float my_zhi = this->zlo + lz * (idx_z + 1);
     size_t fails_done = 0;
-
-    float polymer_bond_length(o.get<float>("polymer_bond_length"));
-    float lj_bead_radius_soft(o.get<float>("lj_bead_radius_soft"));
-    float too_close_threshold_mmt(o.get<float>("too_close_threshold_mmt"));
-    float too_close_threshold_soft(o.get<float>("too_close_threshold_soft"));
-    size_t polymer_atom_type(o.get<size_t>("polymer_atom_type"));
-    size_t polymer_bond_type(o.get<size_t>("polymer_bond_type"));
-    size_t polymerization(o.get<size_t>("polymerization"));
 
 
     #ifdef DETAILED_OUTPUT  // Print parameters of polmyer addition
