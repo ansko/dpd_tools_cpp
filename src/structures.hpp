@@ -2,9 +2,14 @@
 #define STRUCTURES_HPP
 
 
+#include <cmath>
+
+#include <map>
 #include <mutex>
 #include <set>
 #include <vector>
+
+#include "options_parser.hpp"
 
 
 // A simple container class for atom properties

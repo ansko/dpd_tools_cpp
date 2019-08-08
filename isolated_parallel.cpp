@@ -8,13 +8,10 @@
 #include <thread>
 
 #include "src/options_parser.hpp"
-#include "src/structure_add_polymer_parallel.hpp"
-#include "src/structure_add_mmt_circular.hpp"
-#include "src/structure_add_modifier_gallery.hpp"
-#include "src/structure_add_polymer.hpp"
 #include "src/write_data.hpp"
 
 
+// Convert (idx_x, idx_y, idx_z) tuple into a single index
 size_t three2one(size_t idx_x, size_t nx, size_t idx_y, size_t ny, size_t idx_z,
 size_t nz)
 {
@@ -22,6 +19,7 @@ size_t nz)
 }
 
 
+// Convert a single index into a (idx_x, idx_y, idx_z) tuple
 std::array<size_t, 3> one2three(size_t idx1d, size_t nx, size_t ny, size_t nz)
 {
     size_t idx_x, idx_y, idx_z;
@@ -33,6 +31,7 @@ std::array<size_t, 3> one2three(size_t idx1d, size_t nx, size_t ny, size_t nz)
 }
 
 
+// Parallel polymers addition
 void threading_function(size_t thread_idx, Structure &s,
     OptionsParser &o,
     size_t nx, size_t ny, size_t nz, size_t polymers_count)

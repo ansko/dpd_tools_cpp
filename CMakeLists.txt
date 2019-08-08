@@ -48,17 +48,20 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 
 set (HEADERS
     src/options_parser.hpp
-    src/structure_add_mmt_circular.hpp
-    src/structure_add_mmt_periodic.hpp
-    src/structure_add_modifier_gallery.hpp
-    src/structure_add_polymer.hpp
-    src/structure_add_polymer_parallel.hpp
     src/structures.hpp
     src/write_data.hpp
 )
 
+set (SOURCES
+    src/structure_add_mmt_circular.cpp
+    src/structure_add_mmt_periodic.cpp
+    src/structure_add_modifier_gallery.cpp
+    src/structure_add_polymer.cpp
+    src/structure_add_polymer_parallel.cpp
+)
 
-add_executable (isolated_parallel ${HEADERS} isolated_parallel.cpp)
+
+add_executable (isolated_parallel ${HEADERS} ${SOURCES} isolated_parallel.cpp)
 target_link_libraries(isolated_parallel Threads::Threads)
 
-add_executable (periodic ${HEADERS} periodic.cpp)
+add_executable (periodic ${HEADERS} ${SOURCES} periodic.cpp)
