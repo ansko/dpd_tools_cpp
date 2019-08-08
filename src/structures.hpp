@@ -7,6 +7,7 @@
 #include <map>
 #include <mutex>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "options_parser.hpp"
@@ -47,32 +48,36 @@ struct AddMmtPeriodicParameters
 {
 public:
     AddMmtPeriodicParameters(OptionsParser &o, float z=0, size_t
-        charged_count=0)
+        charged_count=0, std::string mode="isolated")
     : z(z), charged_count(charged_count),
       lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay")),
       bead_charge(o.get<float>("bead_charge")),
       platelet_edge(o.get<size_t>("platelet_edge")),
       mmt_atom_type(o.get<size_t>("mmt_atom_type")),
       mmt_edge_bond_type(o.get<size_t>("mmt_edge_bond_type")),
-      mmt_diagonal_bond_type(o.get<size_t>("mmt_diagonal_bond_type"))
+      mmt_diagonal_bond_type(o.get<size_t>("mmt_diagonal_bond_type")),
+      platelet_closing(o.get<float>("platelet_closing"))
     {}
 
     float z;               // z of the circluar platelet center
     size_t charged_count;  // number of platelet atoms carrying non zero charge
     float lj_bead_radius_clay;
+    float platelet_closing;
     float bead_charge;
     size_t platelet_edge;
     size_t mmt_atom_type;
     size_t mmt_edge_bond_type;
     size_t mmt_diagonal_bond_type;
+    std::string mode;
 };
 
 
 struct AddModifierGalleryParameters
 {
 public:
-    AddModifierGalleryParameters (OptionsParser &o, float top, float bottom)
-    : top(top), bottom(bottom),
+    AddModifierGalleryParameters (OptionsParser &o, float top, float bottom,
+                                  std::string mode)
+    : top(top), bottom(bottom), mode(mode),
       modifier_head_tail_bond_length(
           o.get<float>("modifier_head_tail_bond_length")),
       modifier_tail_tail_bond_length(
@@ -87,9 +92,20 @@ public:
       modifier_head_atom_type(o.get<size_t>("modifier_head_atom_type")),
       modifier_tail_atom_type(o.get<size_t>("modifier_tail_atom_type")),
       head_tail_type(o.get<size_t>("head_tail_type")),
-      tail_tail_type(o.get<size_t>("tail_tail_type")),
-      platelet_radius(o.get<size_t>("platelet_radius"))
-    {}
+      tail_tail_type(o.get<size_t>("tail_tail_type"))//,
+      //platelet_radius(o.get<size_t>("platelet_radius"))
+    {
+      if (mode == "isolated")
+        {
+          this->platelet_radius = o.get<size_t>("platelet_radius");
+        }
+      else if (mode == "periodic")
+        ;
+      else
+        {
+          throw std::exception();
+        }
+    }
 
     float top;     // top z-coordintate of the gallery
     float bottom;  // bottom z-coordinate of the gallery
@@ -107,6 +123,7 @@ public:
     size_t head_tail_type;
     size_t tail_tail_type;
     size_t platelet_radius;
+    std::string mode;
 };
 
 
@@ -237,4 +254,4 @@ private:
 };
 
 
-#endif  // STRUCTURES_HPP
+#endif  // STRUCTURES_HPP include guard

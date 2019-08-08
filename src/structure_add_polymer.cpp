@@ -1,7 +1,3 @@
-#ifndef STRUCTURE_ADD_POLYMER
-#define STRUCTURE_ADD_POLYMER
-
-
 #include "structures.hpp"
 
 
@@ -15,18 +11,6 @@ bool Structure::add_polymer(AddPolymerParameters &parameters)
     size_t polymer_atom_type = parameters.polymer_atom_type;
     size_t polymer_bond_type = parameters.polymer_bond_type;
     size_t polymerization = parameters.polymerization;
-
-    #ifdef DETAILED_OUTPUT  // Print parameters of polymer addition
-        std::cout << "**********\n"
-                  << "Structure.hpp add_polymer input parameters:\n"
-                  << "\npolymer_bond_length = " << polymer_bond_length
-                  << "\nlj_bead_radius = " << lj_bead_radius_soft
-                  << "\ntoo_close_threshold_mmt = " << too_close_threshold_mmt
-                  << "\ntoo_close_threshold_soft = " << too_close_threshold_soft
-                  << "\npolymer_atom_type = " << polymer_atom_type
-                  << "\npolymer_bond_type = " << polymer_bond_type
-                  << "\npolymerization = " << polymerization << std::endl;
-    #endif
 
     srand(time(NULL));
     float lx = this->xhi - this->xlo;
@@ -131,6 +115,3 @@ bool Structure::add_polymer(AddPolymerParameters &parameters)
 
     return true;
 }
-
-
-#endif  // STRUCTURE_ADD_POLYMER

@@ -53,4 +53,4 @@ private:
 };
 
 
-#endif  // OPTIONS_PARSER_HPP
+#endif  // OPTIONS_PARSER_HPP include guard

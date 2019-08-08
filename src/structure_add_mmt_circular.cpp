@@ -1,15 +1,12 @@
-#ifndef STRUCTURE_ADD_MMT_CIRCULAR_HPP
-#define STRUCTURE_ADD_MMT_CIRCULAR_HPP
-
-
 #include "structures.hpp"
 
 
 // Add an "infinite" (because of periodic boundary conditions) MMT platelet
-// into existing Structure (==*this)
-bool Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
+// into existing Structure
+bool
+Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
 {
-    // Unpacking 
+    // Unpacking
     float x = parameters.x;
     float y = parameters.y;
     float z = parameters.z;
@@ -23,21 +20,6 @@ bool Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
     size_t mmt_diagonal_bond_type(parameters.mmt_diagonal_bond_type);
 
     // Print (or not) passed parameters of MMT addition
-    #ifdef DETAILED_OUTPUT
-        std::cout << "**********\n"
-                  << "\nStructure.hpp add_mmt_circular input parameters:\n"
-                  << "\nplatelet_radius = " << platelet_radius
-                  << "\nbead_radius_clay = " << lj_bead_radius_clay
-                  << "\natom_type = " << mmt_atom_type
-                  << "\nmmt_edge_bond_type = " << mmt_edge_bond_type
-                  << "\nmmt_diagonal_bond_type = " << mmt_diagonal_bond_type
-                  << "\nx = " << x
-                  << "\ny = " << y
-                  << "\nz = " << z
-                  << "\ncharged_count = " << charged_count
-                  << "\nbead_charge = " << bead_charge
-                  << "\n**********\n";
-    #endif
 
     std::vector<Atom> new_atoms;
     std::vector<Bond> new_bonds;
@@ -157,15 +139,6 @@ bool Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
           }
       }
 
-    // Results of MMT addition
-    #ifdef DETAILED_OUTPUT
-        std::cout << "**********\n";
-        std::cout << "MMT addition in structure.hpp:\n";
-        std::cout << "atoms_count = " << new_atoms.size() << std::endl;
-        std::cout << "bonds_count = " << new_bonds.size() << std::endl;
-        std::cout << "**********\n";
-    #endif
-
     // Append created structure into the existing structure
     for (size_t idx = 0; idx < new_bonds.size(); ++idx)
       {
@@ -181,6 +154,3 @@ bool Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
     this->_atoms_count += new_atoms.size();
     return true;
 }
-
-
-#endif  // STRUCTURE_ADD_MMT_CIRCULAR_HPP

@@ -1,7 +1,3 @@
-#ifndef STRUCTURE_ADD_POLYMER_PARALLEL
-#define STRUCTURE_ADD_POLYMER_PARALLEL
-
-
 #include "structures.hpp"
 
 
@@ -40,19 +36,6 @@ bool Structure::add_polymer_parallel(AddPolymerParallelParameters &parameters)
     float my_zlo = this->zlo + lz * idx_z;
     float my_zhi = this->zlo + lz * (idx_z + 1);
     size_t fails_done = 0;
-
-
-    #ifdef DETAILED_OUTPUT  // Print parameters of polmyer addition
-        std::cout << "**********\n"
-                  << "Structure.hpp add_polymer input parameters:\n"
-                  << "polymer_bond_length = " << polymer_bond_length
-                  << "\nlj_bead_radius_soft = " << lj_bead_radius_soft
-                  << "\ntoo_close_threshold_mmt = " << too_close_threshold_mmt
-                  << "too_close_threshold_soft = " << too_close_threshold_soft
-                  << "polymer_atom_type = " << polymer_atom_type
-                  << "polymer_bond_type = " << polymer_bond_type
-                  << "polymerization = " << polymerization << std::endl;
-    #endif
 
     // TODO adjust fails allowed
     size_t fails_allowed = 500;
@@ -157,6 +140,3 @@ bool Structure::add_polymer_parallel(AddPolymerParallelParameters &parameters)
 
     return true;
 }
-
-
-#endif  // STRUCTURE_ADD_POLYMER_PARALLEL

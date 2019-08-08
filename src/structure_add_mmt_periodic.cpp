@@ -1,7 +1,3 @@
-#ifndef STRUCTURE_ADD_MMT_PERIODIC_HPP
-#define STRUCTURE_ADD_MMT_PERIODIC_HPP
-
-
 #include "structures.hpp"
 
 
@@ -13,26 +9,12 @@ bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
     float z = parameters.z;
     size_t charged_count = parameters.charged_count;
     float lj_bead_radius_clay = parameters.lj_bead_radius_clay;
+    float platelet_closing = parameters.platelet_closing;
     float bead_charge = parameters.bead_charge;
     size_t platelet_edge = parameters.platelet_edge;
     size_t mmt_atom_type = parameters.mmt_atom_type;
     size_t mmt_edge_bond_type = parameters.mmt_edge_bond_type;
     size_t mmt_diagonal_bond_type = parameters.mmt_diagonal_bond_type;
-
-
-    #ifdef DETAILED_OUTPUT  // Print parameters of MMT addition
-        std::cout << "**********\n"
-                  << "Structure.hpp add_mmt_periodic input parameters:\n"
-                  << "platelet_edge = " << platelet_edge
-                  << "\nbead_radius_clay = " << lj_bead_radius_clay
-                  << "\natom_type = " << mmt_atom_type
-                  << "\nmmt_edge_bond_type = " << mmt_edge_bond_type
-                  << "\nmmt_diagonal_bond_type = " << mmt_diagonal_bond_type
-                  << "\nz = " << z
-                  << "\ncharged_count = " << charged_count
-                  << "\nbead_charge = " << bead_charge
-                  << "\n**********\n";
-    #endif
 
     std::vector<Atom> new_atoms;
     std::vector<Bond> new_bonds;
@@ -185,15 +167,6 @@ bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
           }
       }
 
-    // Results of MMT addition
-    #ifdef DETAILED_OUTPUT
-        std::cout << "**********\n";
-        std::cout << "MMT addition in structure.hpp:\n";
-        std::cout << "atoms_count = " << new_atoms.size() << std::endl;
-        std::cout << "bonds_count = " << new_bonds.size() << std::endl;
-        std::cout << "**********\n";
-    #endif
-
     // Append created structure to the existing structure
     for (size_t idx = 0; idx < new_bonds.size(); ++idx)
       {
@@ -209,6 +182,3 @@ bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
     this->_atoms_count += new_atoms.size();
     return true;
 }
-
-
-#endif  // STRUCTURE_ADD_MMT_PERIODIC_HPP

@@ -1,7 +1,3 @@
-#ifndef STRUCTURE_ADD_MODIFIER_GALLERY
-#define STRUCTURE_ADD_MODIFIER_GALLERY
-
-
 #include "structures.hpp"
 
 
@@ -27,27 +23,7 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
     size_t head_tail_type = parameters.head_tail_type;
     size_t tail_tail_type = parameters.tail_tail_type;
     size_t platelet_radius = parameters.platelet_radius;
-
-    #ifdef DETAILED_OUTPUT  // Parameters of modifier addition
-        std::cout << "**********\n"
-                  << "Structure.hpp add_modifier_gallery input parameters:\n"
-                  << "tail_length = " << tail_length
-                  << "\nmodifier_head_tail_bond_length = "
-                      << modifier_head_tail_bond_length
-                  << "\nmodifier_tail_tail_bond_length = "
-                      << modifier_tail_tail_bond_length
-                  << "\nlj_bead_radius_soft = " << lj_bead_radius_soft
-                  << "\ntoo_close_threshold_mmt = " << too_close_threshold_mmt
-                  << "\ntoo_close_threshold_soft = " << too_close_threshold_soft
-                  << "\nmodifier_head_atom_type = " << modifier_head_atom_type
-                  << "\nmodifier_tail_atom_type = " << modifier_tail_atom_type
-                  << "\nbead_charge = " << bead_charge
-                  << "\nhead_tail_type = " << head_tail_type
-                  << "\ntail_tail_type = " << tail_tail_type
-                  << "\ntop = " << top
-                  << "\nbottom = " << bottom
-                  << "\n**********\n";
-    #endif
+    std::string mode = parameters.mode;
 
     srand(time(NULL));
     float lx = this->xhi - this->xlo;
@@ -74,17 +50,23 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
         float z;
         if (new_atoms.size() == 0)
           {
-            float alpha = 2*M_PI * (float)(rand()) / (float)(RAND_MAX);
-            //float x_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
-            //float y_coeff = (float)(rand()) / (float)(RAND_MAX) - 0.5;
-            float z_coeff = (float)(rand()) / (float)(RAND_MAX);
-            //x = this->xlo + lx/2 + lx/2 * o.planar_expansion_coeff * x_coeff;
-            //y = this->ylo + ly/2 + ly/2 * o.planar_expansion_coeff * y_coeff;
-            //x = this->xlo + lx/2 + lx/4 * x_coeff;  // planar coeff == 2
-            //y = this->ylo + ly/2 + ly/4 * y_coeff;
-            x = this->xlo + lx/2 + r_platelet_lj * cos(alpha);
-            y = this->ylo + ly/2 + r_platelet_lj * sin(alpha);
-            z = bottom + interlayer * z_coeff;
+            if (mode == "isolated")
+              {
+                float alpha = 2*M_PI * (float)(rand()) / (float)(RAND_MAX);
+                float z_coeff = (float)(rand()) / (float)(RAND_MAX);
+                x = this->xlo + lx/2 + r_platelet_lj * cos(alpha);
+                y = this->ylo + ly/2 + r_platelet_lj * sin(alpha);
+                z = bottom + interlayer * z_coeff;
+              }
+            else
+              {
+                float x_coeff = (float)(rand()) / (float)(RAND_MAX);
+                float y_coeff = (float)(rand()) / (float)(RAND_MAX);
+                float z_coeff = (float)(rand()) / (float)(RAND_MAX);
+                x = this->xlo + lx * x_coeff;
+                y = this->ylo + ly * y_coeff;
+                z = bottom + interlayer * z_coeff;
+              }
           }
         else
           {
@@ -183,6 +165,3 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
 
     return true;
 }
-
-
-#endif  // STRUCTURE_ADD_MODIFIER_GALLERY
