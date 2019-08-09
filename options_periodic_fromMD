@@ -1,0 +1,53 @@
+# Thickness of MMT platelet in Angstoms
+mmt_real_thickness 8
+
+# Edge length of MMT platelets in beads if periodic algorithm is used
+platelet_edge 35
+
+# Decreasing MMT bonds for platelets to be denser and push away from each other
+platelet_closing 0.5
+
+# Length of the modifier tail in beads
+tail_length 2
+
+# Charge of the modifier head and of MMT substituted atoms
+bead_charge 10
+
+# Number of modifiers (may contradict to CEC and has higher priority)
+modifiers_count_preset 4
+
+# Polymer length in monomer (or in beads because 1 monomer == 1 bead)
+polymerization 10
+
+# Interlayer space in the MMT stack in Angstroms
+real_interlayer 50
+
+# DPD density
+dpd_rho 3
+
+# Bead radius in the lj units
+lj_bead_radius_clay 0.46
+lj_bead_radius_soft 0.70
+
+# Real rdaius of DPD cutoff
+real_r_c 5.23
+
+# Types of beads and bonds
+mmt_atom_type 1
+mmt_edge_bond_type 1
+mmt_diagonal_bond_type 2
+modifier_head_atom_type 2
+modifier_tail_atom_type 3
+head_tail_type 3
+tail_tail_type 4
+polymer_atom_type 4
+polymer_bond_type 5
+
+# Minimal allowed distance between beads (to mmt and to soft phase)
+too_close_threshold_mmt 0.1
+too_close_threshold_soft 0.01
+
+# Bond lengths
+modifier_head_tail_bond_length 2
+modifier_tail_tail_bond_length 2
+polymer_bond_length 2

@@ -8,10 +8,17 @@
 #include "src/write_data.hpp"
 
 
-int main()
+int main(int argc, char *argv[])
 {
     // Parse options
-    OptionsParser o("options_periodic");
+    std::string options_fname("options_periodic");
+    if (argc > 1)
+      {
+        options_fname = argv[1];
+      }
+    OptionsParser o(options_fname);
+
+    std::cout << "Options from: " << options_fname << std::endl;
 
     float mmt_real_thickness(o.get<float>("mmt_real_thickness"));
     float real_interlayer(o.get<float>("real_interlayer"));
@@ -19,6 +26,7 @@ int main()
     float lj_bead_radius_soft(o.get<float>("lj_bead_radius_soft"));
     float lj_bead_radius_clay(o.get<float>("lj_bead_radius_clay"));
     float real_r_c(o.get<float>("real_r_c"));
+    float platelet_closing(o.get<float>("platelet_closing"));
     size_t platelet_edge(o.get<size_t>("platelet_edge"));
     size_t tail_length(o.get<size_t>("tail_length"));
     size_t polymerization(o.get<size_t>("polymerization"));
@@ -65,7 +73,8 @@ int main()
 
 
     // Compute modifiers count per one lamella:
-    float mmt_real_edge = real_r_c * 2*lj_bead_radius_clay * platelet_edge;
+    float mmt_real_edge = real_r_c * 2*lj_bead_radius_clay * platelet_edge
+                          * platelet_closing;
     float real_mmt_area = pow(mmt_real_edge, 2);
     float exchange_surface_density = 0.015;  // see magic_constants.md
     size_t charged_count = modifiers_count_preset;   // TODO this is not ok
