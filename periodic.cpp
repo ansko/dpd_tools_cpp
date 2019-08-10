@@ -95,8 +95,9 @@ int main(int argc, char *argv[])
       }
 
     // Compute box size
-    float xy_size = platelet_edge * 2*lj_bead_radius_clay;
-    float z_size = 4 * lj_bead_radius_clay + real_interlayer / real_r_c;
+    float xy_size = platelet_edge * 2*lj_bead_radius_clay * platelet_closing;
+    float z_size = 4 * lj_bead_radius_clay * platelet_closing
+                   + real_interlayer / real_r_c;
 
     // Adjust polymers count:
     float lj_cell_volume = pow(xy_size, 2) * z_size;

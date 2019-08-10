@@ -4,17 +4,18 @@ newton        on
 special_bonds lj/coul 1 1 1
 atom_style    full
 bond_style    harmonic
+kspace_style  ewald 0.001
 neighbor      3 bin
 neigh_modify  delay 0 every 1 check no page 500000000 one 50000000
 
-read_data    periodic_mmt_edge35_mod_n4_tail2_poly_p10_n3299.data
+read_data     periodic_mmt_edge22_mod_n100_tail2_poly_p10_n105.data
 
 mass          * 1
 
-pair_style    hybrid/overlay coul/cut/soft 2 1 5 dpd 1 2 6668635
+pair_style    hybrid/overlay coul/long/soft 2 1 5 dpd 1 2 6668635
 
-pair_coeff    1 1 dpd 100 5 0.46
-pair_coeff    1 2 dpd 100 5 0.796743
+pair_coeff    1 1 dpd 100 5 0.23
+pair_coeff    1 2 dpd 100 50 0.4
 pair_coeff    1 3 dpd 100 5 0.64
 pair_coeff    1 4 dpd 100 5 0.64
 pair_coeff    2 2 dpd 50 5 0.7
@@ -24,25 +25,38 @@ pair_coeff    3 3 dpd 50 5 0.7
 pair_coeff    3 4 dpd 25 5 0.7
 pair_coeff    4 4 dpd 50 5 0.7
 
-pair_coeff    * * coul/cut/soft 0.1
+pair_coeff    * * coul/long/soft 0.1
 
 bond_coeff    1 1000 0.46
-bond_coeff    2 1000 1.13
+bond_coeff    2 1000 0.8
 bond_coeff    3 10 1.4
 bond_coeff    4 10 1.4
 bond_coeff    5 10 1.4
 
-thermo        10
-thermo_style  custom step density press pe ebond ecoul evdwl lz
+group         mmt id 1:968
+group         mod id 969:1268
+group         poly id 1268:2318
 
-group         charged id 1:2152
-group         soft_rared id 2153:505212:1000
-#group         imagable union charged soft_rared
-group         imagable id 1:1000
+group         charged id 1:1268
+group         soft_rared id 1269:2318:50
+group         imagable union charged soft_rared
 
 dump          d1 imagable image 10 images_dump/*.jpg type type view 90 0
+
+compute       modpair mod group/group mod pair yes kspace no
+compute       polypair poly group/group poly pair yes kspace no
+compute       modpolypair mod group/group poly pair yes kspace no
+
+thermo        10
+#thermo_style  custom step density press pe ebond ecoul evdwl lz
+thermo_style  custom step c_modpair c_polypair c_modpolypair
 
 timestep      0.01
 fix           1 all npt x 30 30 1000 y 30 30 1000 z 30 30 1000 temp 1 1 10000
 
-run 1000
+label loop
+variable a loop 100
+    run 1000 start 0 stop 100000
+    write_restart re.*.restart
+    next a
+jump SELF loop

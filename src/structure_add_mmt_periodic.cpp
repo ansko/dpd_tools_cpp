@@ -15,6 +15,7 @@ bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
     size_t mmt_atom_type = parameters.mmt_atom_type;
     size_t mmt_edge_bond_type = parameters.mmt_edge_bond_type;
     size_t mmt_diagonal_bond_type = parameters.mmt_diagonal_bond_type;
+    float reduction_k(parameters.platelet_closing);
 
     std::vector<Atom> new_atoms;
     std::vector<Bond> new_bonds;
@@ -23,7 +24,6 @@ bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
     // Add atoms and bonds top-bottom
     // bond length = reduction_k * 2 * lj_bead_radius_clay ...
     // but only along x and y
-    float reduction_k(1.0);  // TODO: introduce !=1 values
     std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
     for (int idxx = 0; idxx < (int)platelet_edge; ++idxx)
       {
@@ -37,11 +37,13 @@ bool Structure::add_mmt_periodic(AddMmtPeriodicParameters &parameters)
             float dy = reduction_k * idxy * 2 * lj_bead_radius_clay
                        - (float)platelet_edge * lj_bead_radius_clay
                        + lj_bead_radius_clay;
-            new_atoms.push_back(Atom(dx, dy, z - lj_bead_radius_clay,
-                0, mmt_atom_type, 0, 0, 0, "filler"));
+            new_atoms.push_back(Atom(dx, dy,
+                                     z - lj_bead_radius_clay*reduction_k,
+                                     0, mmt_atom_type, 0, 0, 0, "filler"));
             atom_ids[idxx][idxy]["bottom"] = new_idx++;
-            new_atoms.push_back(Atom(dx, dy, z + lj_bead_radius_clay,
-                0, mmt_atom_type, 0, 0, 0, "filler"));
+            new_atoms.push_back(Atom(dx, dy,
+                                     z + lj_bead_radius_clay*reduction_k,
+                                     0, mmt_atom_type, 0, 0, 0, "filler"));
             atom_ids[idxx][idxy]["top"] = new_idx++;
             // Only bonds top-bottom
             new_bonds.push_back(Bond(mmt_edge_bond_type, new_idx - 2,
