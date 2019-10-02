@@ -10,13 +10,13 @@ mmt_real_thickness 8
 planar_expansion_coeff 1.25
 
 # Radius of MMT platelet in beads if isolated algorithm is used
-platelet_radius 10
+platelet_radius 50
 
 # Decreasing MMT bonds for platelets to be denser and push away from each other
-platelet_closing 0.5
+platelet_closing 0.2
 
 # Length of the modifier tail in beads
-tail_length 5
+tail_length 2
 
 # Charge of the modifier head and of MMT substituted atoms
 bead_charge 10
@@ -55,7 +55,7 @@ polymer_atom_type 4
 polymer_bond_type 5
 
 # Minimal allowed distance between beads (to mmt and to soft phase)
-too_close_threshold_mmt 1
+too_close_threshold_mmt 0.1
 too_close_threshold_soft 0.01
 
 # Bond lengths

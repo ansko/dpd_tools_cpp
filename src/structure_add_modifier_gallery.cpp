@@ -30,10 +30,14 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
     float ly = this->yhi - this->ylo;
     float lz = this->zhi - this->zlo;
     float r_platelet = platelet_radius*2;
-    float r_platelet_lj = (2 * platelet_radius * platelet_closing)
-        * lj_bead_radius_clay;
+    //float r_platelet_lj = (2 * platelet_radius * platelet_closing)
+    //    / lj_bead_radius_clay;
+    float r_platelet_lj = (0.25 * platelet_radius * platelet_closing)
+        / lj_bead_radius_clay;
     float interlayer = top - bottom;
     size_t fails_done = 0;
+
+    std::cout << r_platelet_lj << std::endl;
 
     // TODO adjust fails allowed
     size_t fails_allowed = 100;
@@ -52,10 +56,12 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
           {
             if (mode == "isolated")
               {
+                float r_coeff(float(rand()) / float(RAND_MAX));
+                float tmp_r(r_platelet_lj * r_coeff);
                 float alpha = 2*M_PI * (float)(rand()) / (float)(RAND_MAX);
                 float z_coeff = (float)(rand()) / (float)(RAND_MAX);
-                x = this->xlo + lx/2 + r_platelet_lj * cos(alpha);
-                y = this->ylo + ly/2 + r_platelet_lj * sin(alpha);
+                x = this->xlo + lx/2 + tmp_r * cos(alpha);
+                y = this->ylo + ly/2 + tmp_r * sin(alpha);
                 z = bottom + interlayer * z_coeff;
               }
             else

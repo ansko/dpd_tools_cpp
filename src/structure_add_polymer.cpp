@@ -25,6 +25,9 @@ bool Structure::add_polymer(AddPolymerParameters &parameters)
         * pow(lj_bead_radius_soft, 2);
     float close_r_sq_soft = pow(too_close_threshold_soft, 2)
         * pow(lj_bead_radius_soft, 2);
+
+    float r = polymer_bond_length * lj_bead_radius_soft;
+
     while (fails_done < fails_allowed && new_atoms.size() != polymerization)
       {
         float x;
@@ -49,7 +52,6 @@ bool Structure::add_polymer(AddPolymerParameters &parameters)
         float phi_coeff = (float)(rand()) / (float)(RAND_MAX);
         float theta = theta_coeff * M_PI;
         float phi = phi_coeff * 2*M_PI;
-        float r = polymer_bond_length * lj_bead_radius_soft;
         x += r * sin(theta) * cos(phi);
         y += r * sin(theta) * sin(phi);
         z += r * cos(theta);
