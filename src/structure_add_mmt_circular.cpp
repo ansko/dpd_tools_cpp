@@ -19,8 +19,6 @@ Structure::add_mmt_circular(AddMmtCircularParameters &parameters)
     size_t mmt_edge_bond_type(parameters.mmt_edge_bond_type);
     size_t mmt_diagonal_bond_type(parameters.mmt_diagonal_bond_type);
 
-    // Print (or not) passed parameters of MMT addition
-
     std::vector<Atom> new_atoms;
     std::vector<Bond> new_bonds;
     size_t new_idx = 1;

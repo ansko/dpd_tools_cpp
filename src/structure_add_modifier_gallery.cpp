@@ -4,17 +4,13 @@
 // Add modifier into the space sconstrained by z = top and z = bottom
 bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
 {
-    // Unpacking
+    // Unpacking passed paramters:
     float top = parameters.top;
     float bottom = parameters.bottom;
-    float modifier_head_tail_bond_length
-        = parameters.modifier_head_tail_bond_length;
-    float modifier_tail_tail_bond_length
-        = parameters.modifier_tail_tail_bond_length;
-    float lj_bead_radius_soft = parameters.lj_bead_radius_soft;
-    float lj_bead_radius_clay = parameters.lj_bead_radius_clay;
-    float too_close_threshold_mmt = parameters.too_close_threshold_mmt;
-    float too_close_threshold_soft = parameters.too_close_threshold_soft;
+    float ht_len(parameters.modifier_head_tail_bond_length);
+    float tt_len(parameters.modifier_tail_tail_bond_length);
+    float lj_br_soft(parameters.lj_bead_radius_soft);
+    float lj_br_clay(parameters.lj_bead_radius_clay);
     float bead_charge = parameters.bead_charge;
     float platelet_closing = parameters.platelet_closing;
     size_t tail_length = parameters.tail_length;
@@ -24,29 +20,27 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
     size_t tail_tail_type = parameters.tail_tail_type;
     size_t platelet_radius = parameters.platelet_radius;
     std::string mode = parameters.mode;
+    // Calculate minimal distances based on parameters
+    float r2_min_mmt(pow(parameters.too_close_threshold_mmt, 2)
+                     * pow(lj_br_soft, 2));
+    float r2_min_soft(pow(parameters.too_close_threshold_soft, 2)
+                      * pow(lj_br_soft, 2));
 
+    // Start algorithm
     srand(time(NULL));
     float lx = this->xhi - this->xlo;
     float ly = this->yhi - this->ylo;
     float lz = this->zhi - this->zlo;
-    float r_platelet = platelet_radius*2;
-    //float r_platelet_lj = (2 * platelet_radius * platelet_closing)
-    //    / lj_bead_radius_clay;
-    float r_platelet_lj = (0.25 * platelet_radius * platelet_closing)
-        / lj_bead_radius_clay;
+    float r_platelet_lj((2 * platelet_radius * lj_br_clay * platelet_closing));
     float interlayer = top - bottom;
     size_t fails_done = 0;
-
-    std::cout << r_platelet_lj << std::endl;
 
     // TODO adjust fails allowed
     size_t fails_allowed = 100;
     std::vector<Atom> new_atoms;
     std::vector<Bond> new_bonds;
-    float close_r_sq_mmt = pow(too_close_threshold_mmt, 2)
-        * pow(lj_bead_radius_soft, 2);
-    float close_r_sq_soft = pow(too_close_threshold_soft, 2)
-        * pow(lj_bead_radius_soft, 2);
+
+    // Start molecule construction
     while (fails_done < fails_allowed && new_atoms.size() != 1 + tail_length)
       {
         float x;
@@ -87,27 +81,28 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
         float r;
         if (new_atoms.size() == 0)
           {
-            r = modifier_head_tail_bond_length * lj_bead_radius_soft;
+            r = ht_len * lj_br_soft;
           }
         else
           {
-            r = modifier_tail_tail_bond_length * lj_bead_radius_soft;
+            r = tt_len * lj_br_soft;
           }
         x += r * sin(theta) * cos(phi);
         y += r * sin(theta) * sin(phi);
         z += r * cos(theta);
         bool is_close = false;
+        // Check whether molecule fits into existing structure
         for (auto & atom : this->_atoms)
           {
-            float dx = std::min(lx - std::fabs(atom.second.x - x),
-                                std::fabs(atom.second.x - x));
-            float dy = std::min(ly - std::fabs(atom.second.y - y),
-                                std::fabs(atom.second.y - y));
-            float dz = std::min(lz - std::fabs(atom.second.z - z),
-                                std::fabs(atom.second.z - z));
+            float dx(std::fabs(atom.second.x - x));
+            float dy(std::fabs(atom.second.y - y));
+            float dz(std::fabs(atom.second.z - z));
+            dx = std::min(lx - dx, dx);
+            dy = std::min(ly - dy, dy);
+            dz = std::min(lz - dz, dz);
             float dr = dx*dx + dy*dy + dz*dz;
-            if ((dr < close_r_sq_mmt && atom.second.phase == "filler")
-                || (dr < close_r_sq_soft && atom.second.phase != "filler"))
+            if ((dr < r2_min_mmt && atom.second.phase == "filler")
+                || (dr < r2_min_soft && atom.second.phase != "filler"))
               {
                 is_close = true;
                 break;
@@ -118,13 +113,17 @@ bool Structure::add_modifier_gallery(AddModifierGalleryParameters &parameters)
             fails_done ++;
             continue;
           }
+        // Check whether new molecule atom fits existing new molecule atoms
         for (auto & atom : new_atoms)
           {
-            float dx = std::min(lx - std::fabs(atom.x - x), std::fabs(atom.x - x));
-            float dy = std::min(ly - std::fabs(atom.y - y), std::fabs(atom.y - y));
-            float dz = std::min(lz - std::fabs(atom.z - z), std::fabs(atom.z - z));
+            float dx(std::fabs(atom.x - x));
+            float dy(std::fabs(atom.y - y));
+            float dz(std::fabs(atom.z - z));
+            dx = std::min(lx - dx, dx);
+            dy = std::min(ly - dy, dy);
+            dz = std::min(lz - dz, dz);
             float dr = dx*dx + dy*dy + dz*dz;
-            if (dr < close_r_sq_soft)
+            if (dr < r2_min_soft)
               {
                 is_close = true;
                 break;

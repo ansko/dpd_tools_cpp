@@ -84,8 +84,8 @@ int main()
     size_t threads_nz(o.get<size_t>("threads_nz"));
 
     // Compute modifiers count per one lamella:
-    float real_mmt_bead_d(real_r_c * 2*lj_bead_radius_clay * platelet_closing);
-    float real_mmt_area = M_PI * pow(platelet_radius * real_mmt_bead_d, 2);
+    float real_mmt_bead_d(real_r_c * 2 * lj_bead_radius_clay * platelet_closing);
+    float real_mmt_area(M_PI * pow(platelet_radius * real_mmt_bead_d, 2));
 
     size_t charged_count;
     std::string modifier_count_taken_from;
@@ -284,6 +284,9 @@ int main()
         return 0;
       }
 
+    // comp_L: area = 7500; CEC = 93; 108 modifiers
+    float CEC(93 * (7500 / real_mmt_area / stacking) * (charged_count / 108));
+
     std::string data_out_fname("parallel_isolated_mmt");
     data_out_fname += "_r" + std::to_string(platelet_radius);
     data_out_fname += "_n" + std::to_string(stacking);
@@ -291,10 +294,12 @@ int main()
     data_out_fname += "_tail" + std::to_string(tail_length);
     data_out_fname += "_poly_p" + std::to_string(polymerization);
     data_out_fname += "_n" + std::to_string(polymers_done);
+    data_out_fname += "_CEC" + std::to_string(int(CEC));
     data_out_fname += ".data";
     write_data(data_out_fname, s);
 
-    std::cout << "Success!\n" << data_out_fname << std::endl;
+    std::cout << "Success! CEC = " << CEC << std::endl << data_out_fname
+              << std::endl;
 
     return 0;
 }
