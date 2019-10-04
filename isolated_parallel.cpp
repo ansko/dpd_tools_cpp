@@ -11,36 +11,15 @@
 #include "src/write_data.hpp"
 
 
-// Convert (idx_x, idx_y, idx_z) tuple into a single index
-size_t three2one(size_t idx_x, size_t nx, size_t idx_y, size_t ny, size_t idx_z,
-size_t nz)
+std::mutex mmm;
+
+// Parallel polymers addition:
+// performs splitting initial cell into the 3d array of small boxes
+// which are independent from each other
+void
+par_poly_add(Structure &s, OptionsParser &o, BBox bbox, size_t polymers_count)
 {
-    return idx_x * ny*nz + idx_y * nz + idx_z;
-}
-
-
-// Convert a single index into a (idx_x, idx_y, idx_z) tuple
-std::array<size_t, 3> one2three(size_t idx1d, size_t nx, size_t ny, size_t nz)
-{
-    size_t idx_x, idx_y, idx_z;
-    idx_x = idx1d / (ny*nz);
-    idx1d -= idx_x * ny*nz;
-    idx_y = idx1d / nz;
-    idx_z = idx1d - idx_y * nz;
-    return std::array<size_t, 3>({idx_x, idx_y, idx_z});
-}
-
-
-// Parallel polymers addition
-void threading_function(size_t thread_idx, Structure &s,
-    OptionsParser &o,
-    size_t nx, size_t ny, size_t nz, size_t polymers_count)
-{
-    std::array<size_t, 3> idcs3d = one2three(thread_idx, nx, ny, nz);
     size_t polymerization(o.get<float>("polymerization"));
-    size_t idx_x = idcs3d[0];
-    size_t idx_y = idcs3d[1];
-    size_t idx_z = idcs3d[2];
     size_t polymers_done = 0;
     size_t polymers_fails_done = 0;
     size_t polymers_fails_allowed = polymers_count * polymerization;
@@ -48,9 +27,8 @@ void threading_function(size_t thread_idx, Structure &s,
     while (polymers_done < polymers_count
            && polymers_fails_done < polymers_fails_allowed)
       {
-        AddPolymerParallelParameters parameters(
-            o, idx_x, nx, idx_y, ny, idx_z, nz);
-        bool status = s.add_polymer_parallel(parameters);
+        AddPolymerParallelParameters parameters(o);
+        bool status = s.add_poly_bbox(bbox, parameters);
         if (status)
           {
             polymers_done++;
@@ -65,6 +43,11 @@ void threading_function(size_t thread_idx, Structure &s,
 
 int main()
 {
+    // Some option from MD
+    float md_mmt_area(7500);
+    float md_cec(92.6);
+    float md_mods_count(108);
+
     // Parse options
     OptionsParser o("options_isolated");
 
@@ -91,7 +74,7 @@ int main()
     std::string modifier_count_taken_from;
     if (!modifiers_count_preset)
       {
-        charged_count = 0.015 * real_mmt_area * stacking;
+        charged_count = md_mods_count * (real_mmt_area * stacking / md_mmt_area);
         modifier_count_taken_from = "CEC";
       }
     else
@@ -135,6 +118,9 @@ int main()
     s.yhi = cube_edge/2;
     s.zlo = -cube_edge/2;
     s.zhi = cube_edge/2;
+    float lx(s.xhi - s.xlo);
+    float ly(s.yhi - s.ylo);
+    float lz(s.zhi - s.zlo);
 
     // Add MMT stack
     size_t half_stacking = stacking / 2;
@@ -233,18 +219,21 @@ int main()
     size_t nx = threads_nx;
     size_t ny = threads_ny;
     size_t nz = threads_nz;
-
+    size_t poly_count_sub(polymers_count / (nx * ny * nz));
     std::vector<std::thread> my_threads;
     for (size_t idx_x = 0; idx_x < nx; ++idx_x)
         for (size_t idx_y = 0; idx_y < ny; ++idx_y)
             for (size_t idx_z = 0; idx_z < nz; ++idx_z)
               {
-                size_t thread_idx(three2one(idx_x, nx, idx_y, ny, idx_z, nz));
-                my_threads.emplace_back(
-                    threading_function,
-                    thread_idx,
-                    std::ref(s), std::ref(o),
-                    nx, ny, nz, size_t(polymers_count / (nx*ny*nz)));
+                float cur_xlo(s.xlo + lx / nx * idx_x);
+                float cur_xhi(s.xlo + lx / nx * (idx_x + 1));
+                float cur_ylo(s.ylo + ly / ny * idx_y);
+                float cur_yhi(s.ylo + ly / ny * (idx_y + 1));
+                float cur_zlo(s.zlo + lz / nz * idx_z);
+                float cur_zhi(s.zlo + lz / nz * (idx_z + 1));
+                BBox bbox(cur_xlo, cur_xhi, cur_ylo, cur_yhi, cur_zlo, cur_zhi);
+                my_threads.emplace_back(par_poly_add, std::ref(s), std::ref(o),
+                                        bbox, poly_count_sub);
               }
     for (auto &th : my_threads)
       {
@@ -265,8 +254,9 @@ int main()
         while (polymers_done < polymers_count
             && polymers_fails_done < polymers_fails_allowed)
           {
-            AddPolymerParameters parameters(o);
-            bool status = s.add_polymer(parameters);
+            AddPolymerParallelParameters parameters(o);
+            BBox bbox(s.xlo, s.xhi, s.ylo, s.yhi, s.zlo, s.zhi);
+            bool status = s.add_poly_bbox(bbox, parameters);
             if (status)
               {
                 polymers_done++;
@@ -284,8 +274,8 @@ int main()
         return 0;
       }
 
-    // comp_L: area = 7500; CEC = 93; 108 modifiers
-    float CEC(93 * (7500 / real_mmt_area / stacking) * (charged_count / 108));
+    float CEC(md_cec * (md_mmt_area / real_mmt_area / stacking)
+                     * (charged_count / md_mods_count));
 
     std::string data_out_fname("parallel_isolated_mmt");
     data_out_fname += "_r" + std::to_string(platelet_radius);

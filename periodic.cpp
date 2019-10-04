@@ -162,8 +162,8 @@ int main(int argc, char *argv[])
     while (polymers_done < polymers_count
         && polymers_fails_done < polymers_fails_allowed)
       {
-        AddPolymerParameters parameters(o);
-        bool status = s.add_polymer(parameters);
+        AddPolymerParallelParameters parameters(o);
+        BBox bbox(s.xlo, s.xhi, s.ylo, s.yhi, s.zlo, s.zhi);
         if (status)
           {
             polymers_done++;

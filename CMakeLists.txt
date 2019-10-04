@@ -44,14 +44,15 @@ set (HEADERS
     src/options_parser.hpp
     src/structures.hpp
     src/write_data.hpp
+    src/parameters_classes.hpp
 )
 
 set (SOURCES
     src/structure_add_mmt_circular.cpp
     src/structure_add_mmt_periodic.cpp
     src/structure_add_modifier_gallery.cpp
-    src/structure_add_polymer.cpp
-    src/structure_add_polymer_parallel.cpp
+    #src/structure_add_polymer.cpp
+    src/structure_add_poly_bbox.cpp
 )
 
 
