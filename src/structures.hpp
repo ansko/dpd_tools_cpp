@@ -90,6 +90,9 @@ public:
     std::map<int, Bond> bonds() { return this->_bonds; }
 
     bool add_mmt_circular(AddMmtCircularParameters &parameters);
+
+    bool add_mmt_circular_fcc(AddMmtCircularParameters &parameters);
+
     bool add_mmt_periodic(AddMmtPeriodicParameters &parameters);
     bool add_modifier_gallery(AddModifierGalleryParameters &parameters);
     bool add_polymer_parallel(AddPolymerParallelParameters &parameters);

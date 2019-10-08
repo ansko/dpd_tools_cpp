@@ -49,14 +49,18 @@ set (HEADERS
 
 set (SOURCES
     src/structure_add_mmt_circular.cpp
+    src/structure_add_mmt_circular_fcc.cpp
+
     src/structure_add_mmt_periodic.cpp
     src/structure_add_modifier_gallery.cpp
-    #src/structure_add_polymer.cpp
     src/structure_add_poly_bbox.cpp
 )
 
 
 add_executable (isolated_parallel ${HEADERS} ${SOURCES} isolated_parallel.cpp)
 target_link_libraries(isolated_parallel Threads::Threads)
+
+add_executable (isolated_parallel_fcc ${HEADERS} ${SOURCES} isolated_parallel_fcc.cpp)
+target_link_libraries(isolated_parallel_fcc Threads::Threads)
 
 add_executable (periodic ${HEADERS} ${SOURCES} periodic.cpp)

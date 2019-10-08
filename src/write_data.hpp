@@ -34,7 +34,8 @@ void write_data(std::string out_fname, Structure &structure)
             bond_types.insert(entry.second.type);
           }
         ofs << bonds_count << " bonds\n";
-        ofs << bond_types.size() << " bond types\n";
+        //ofs << bond_types.size() << " bond types\n";
+        ofs << "5 bond types\n";
       }
     ofs << "\n";
     ofs << structure.xlo << " " << structure.xhi << " xlo xhi\n";
