@@ -28,10 +28,17 @@ Structure::add_mmt_circular_fcc(AddMmtCircularParameters &parameters)
     std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
     // map[idx_z][idx_y][idx_x] ...
 
+/*
     int idx_min_x((-float(platelet_radius) + 1) / sin(M_PI/3));
     int idx_max_x(float(platelet_radius) / sin(M_PI/3));
     int idx_min_y((-float(platelet_radius) + 1) / sin(M_PI/3));
     int idx_max_y(platelet_radius / sin(M_PI/3));
+*/
+    int idx_min_x((-float(platelet_radius) + 1));
+    int idx_max_x(platelet_radius);
+    int idx_min_y((-float(platelet_radius) + 1));
+    int idx_max_y(platelet_radius);
+
     float R(platelet_radius * 2 * lj_bead_radius_clay * platelet_closing);
     float bond_len(2 * lj_bead_radius_clay * platelet_closing);
     float bond_len2(bond_len * bond_len);
