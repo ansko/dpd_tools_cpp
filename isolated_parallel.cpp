@@ -187,7 +187,10 @@ int main()
                 bottom = top - lj_interlayer / 2;
               }
             galleries.push_back(std::pair<float, float>(bottom, top));
-            galleries.push_back(std::pair<float, float>(-top, -bottom));
+            if (idx != 0)
+              {
+                galleries.push_back(std::pair<float, float>(-top, -bottom));
+              }
           }
       }
     else

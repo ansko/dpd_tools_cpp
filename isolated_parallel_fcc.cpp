@@ -3,9 +3,12 @@
 
 #include <cmath>
 
+#include <algorithm>
 #include <array>
 #include <iostream>
+#include <random>
 #include <thread>
+#include <vector>
 
 #include "src/options_parser.hpp"
 #include "src/write_data.hpp"
@@ -190,7 +193,10 @@ int main()
                 bottom = top - lj_interlayer / 2;
               }
             galleries.push_back(std::pair<float, float>(bottom, top));
-            galleries.push_back(std::pair<float, float>(-top, -bottom));
+            if (idx != 0)
+              {
+                galleries.push_back(std::pair<float, float>(-top, -bottom));
+              }
           }
       }
     else
@@ -222,7 +228,21 @@ int main()
     while (modifiers_done < charged_count
         && modifiers_fails_done < modifiers_fails_allowed)
       {
-        size_t idx = rand() % galleries.size();
+        // Chose gallery idx; since outer galleries are smaller,
+        // the probability of chosnig them should be increased:
+
+        std::vector<size_t> mod_idcs(galleries.size() + 4);
+        std::vector<size_t> chosen;
+        std::iota (std::begin(mod_idcs), std::end(mod_idcs), 0);
+        mod_idcs[mod_idcs.size() - 4] = 0;
+        mod_idcs[mod_idcs.size() - 3] = 0;
+        mod_idcs[mod_idcs.size() - 2] = galleries.size() - 1;
+        mod_idcs[mod_idcs.size() - 1] = galleries.size() - 1;
+
+        std::sample(mod_idcs.begin(), mod_idcs.end(), std::back_inserter(chosen),
+                1, std::mt19937{std::random_device{}()});
+        size_t idx = mod_idcs[chosen[0]];
+
         float bottom = galleries[idx].first;
         float top = galleries[idx].second;
         AddModifierGalleryParameters parameters(o, top, bottom, "isolated");
