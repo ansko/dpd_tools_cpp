@@ -70,6 +70,10 @@ int main()
     float real_mmt_bead_d(real_r_c * 2 * lj_bead_radius_clay * platelet_closing);
     float real_mmt_area(M_PI * pow(platelet_radius * real_mmt_bead_d, 2));
 
+    float mmt_R_lj(platelet_radius * 2 * lj_bead_radius_clay * platelet_closing);
+    float lj_mmt_area = mmt_R_lj * mmt_R_lj * M_PI;
+    float lj_all_mmt_area = lj_mmt_area * stacking;
+
     size_t charged_count;
     std::string modifier_count_taken_from;
     if (!modifiers_count_preset)
@@ -84,17 +88,17 @@ int main()
       }
 
     // Compute interlayer based on modifiers size and count
-    float lj_mmt_area = real_mmt_area / real_r_c / real_r_c;
+    //float lj_mmt_area = real_mmt_area / real_r_c / real_r_c;
     float lj_volume = (tail_length + 1) * charged_count / dpd_rho;
-    float lj_interlayer = lj_volume / lj_mmt_area;
-    float real_interlayer(lj_interlayer * real_r_c);
+    float lj_interlayer = lj_volume / lj_all_mmt_area;
+    //float real_interlayer(lj_interlayer * real_r_c);
 
     // Compute box size
-    float min_height = real_interlayer * stacking
-        + 2 * real_mmt_bead_d * stacking;
-    float min_width = 2*platelet_radius * real_mmt_bead_d
+    float mmt_z_period = lj_interlayer + 4 * lj_bead_radius_clay * platelet_closing;
+    float min_height = mmt_z_period * (stacking + 1);
+    float min_width =  2*platelet_radius * lj_bead_radius_clay * platelet_closing
         * float(planar_expansion_coeff);
-    float cube_edge = std::max(min_width, min_height) / real_r_c;
+    float cube_edge = std::max(min_width, min_height);
 
     // Adjust polymers count:
     float lj_cell_volume = pow(cube_edge, 3);
@@ -168,24 +172,47 @@ int main()
     std::vector<std::pair<float, float> > galleries;
     if (stacking % 2 == 0)
       {
-        for (size_t idx = 0; idx < half_stacking; ++idx)
+        for (size_t idx = 0; idx < half_stacking + 1; ++idx)
           {
-            float top = lj_interlayer / 2
-                + idx * (lj_interlayer + 4 * lj_bead_radius_clay);
-            galleries.push_back(std::pair<float, float>(top - lj_interlayer,
-                                                        top));
+            float top;
+            float bottom;
+            if (idx != half_stacking)
+              {
+                top = lj_interlayer / 2 + idx * mmt_z_period;
+                bottom = top - lj_interlayer;
+              }
+            else
+              {
+                top = idx * mmt_z_period;
+                bottom = top - lj_interlayer / 2;
+              }
+            galleries.push_back(std::pair<float, float>(bottom, top));
+            galleries.push_back(std::pair<float, float>(-top, -bottom));
           }
       }
     else
       {
-        for (size_t idx = 0; idx < half_stacking; ++idx)
+        for (size_t idx = 0; idx < half_stacking + 1; ++idx)
           {
-            float top = lj_interlayer + 2 * lj_bead_radius_clay
-                + idx * (lj_interlayer + 4 * lj_bead_radius_clay);
-            galleries.push_back(std::pair<float, float>(top - lj_interlayer,
-                                                        top));
+            float top;
+            float bottom;
+
+
+            if (idx != half_stacking)
+              {
+                top = lj_interlayer + 2 * lj_bead_radius_clay;
+                bottom = top - lj_interlayer;
+              }
+            else
+              {
+                top = lj_interlayer / 2 + 2 * lj_bead_radius_clay;
+                bottom = top - lj_interlayer / 2;
+              }
+            galleries.push_back(std::pair<float, float>(bottom, top));
+            galleries.push_back(std::pair<float, float>(-top, -bottom));
           }
       }
+
     size_t modifiers_done = 0;
     size_t modifiers_fails_done = 0;
     size_t modifiers_fails_allowed = charged_count * 10000;
