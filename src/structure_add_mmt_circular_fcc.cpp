@@ -24,10 +24,6 @@ Structure::add_mmt_circular_fcc(AddMmtCircularParameters &parameters)
     size_t new_idx = 1;
 
     // Add atoms and bonds between top atom and neighboring bottom atom
-
-    std::map<int, std::map<int, std::map<std::string, size_t> > > atom_ids;
-    // map[idx_z][idx_y][idx_x] ...
-
     int idx_min_x((-float(platelet_radius) - 1));
     int idx_max_x(platelet_radius + 1);
     int idx_min_y((-float(platelet_radius) - 1));
@@ -40,11 +36,8 @@ Structure::add_mmt_circular_fcc(AddMmtCircularParameters &parameters)
 
     for (int idxx = idx_min_x; idxx < idx_max_x; ++idxx)
       {
-        atom_ids[idxx] = std::map<int, std::map<std::string, size_t> >();
         for (int idxy = idx_min_y; idxy < idx_max_y; ++idxy)
           {
-            atom_ids[idxx][idxy] = std::map<std::string, size_t>();
-
             float dx = idxx * bond_len + idxy * bond_len * cos(M_PI/3);
             float dy = idxy * bond_len * sin(M_PI/3);
 
@@ -55,16 +48,11 @@ Structure::add_mmt_circular_fcc(AddMmtCircularParameters &parameters)
 
             new_atoms.push_back(Atom(x + dx, y + dy, z - tet_height,
                                      0, mmt_atom_type, 0, 0, 0, "filler"));
-            //atom_ids[idxx][idxy]["bottom"] = new_idx;
-
             new_atoms.push_back(Atom(x + dx, y + dy, z + tet_height,
                                      0, mmt_atom_type, 0, 0, 0, "filler"));
-            //atom_ids[idxx][idxy]["top"] = new_idx + 1;
-
 
             float dx_small (2.0/3.0 * sqrt(3) / 2 * cos(M_PI/6));
             float dy_small (2.0/3.0 * sqrt(3) / 2 * sin(M_PI/6));
-
             if (sqrt((dx + dx_small)*(dx + dx_small)
                       + (dy + dy_small)*(dy + dy_small)) > R)
               {
@@ -74,9 +62,6 @@ Structure::add_mmt_circular_fcc(AddMmtCircularParameters &parameters)
 
             new_atoms.push_back(Atom(x + dx + dx_small, y + dy + dy_small, z,
                                      0, mmt_atom_type, 0, 0, 0, "filler"));
-            //atom_ids[idxx][idxy]["middle"] = new_idx + 1;
-
-
             new_idx += 3;
           }
       }
@@ -109,6 +94,26 @@ Structure::add_mmt_circular_fcc(AddMmtCircularParameters &parameters)
               }
           }
 
+    // Assign (or not) charges
+    if (charged_count != 0)
+      {
+        if (new_atoms.size() < charged_count)
+          {
+            std::cerr << "Cannot charge " << charged_count
+                      << " atoms from " << new_atoms.size() <<std::endl;
+          }
+        std::set<int> charged_ids;
+        srand(time(NULL));
+        while (charged_ids.size() < charged_count)
+          {
+            charged_ids.insert(rand() % new_atoms.size());
+          }
+        for (auto it = charged_ids.begin(); it != charged_ids.end(); ++it)
+          {
+            new_atoms[*it].q = -bead_charge;
+          }
+      }
+
     // Append created structure into the existing structure
     for (size_t idx = 0; idx < new_bonds.size(); ++idx)
       {
@@ -122,5 +127,6 @@ Structure::add_mmt_circular_fcc(AddMmtCircularParameters &parameters)
         this->_atoms[this->_atoms_count + 1 + idx] = new_atoms[idx];
       }
     this->_atoms_count += new_atoms.size();
+
     return true;
 }

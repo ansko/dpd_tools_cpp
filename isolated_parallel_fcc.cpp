@@ -62,7 +62,7 @@ int main()
     float planar_expansion_coeff(o.get<float>("planar_expansion_coeff"));
     size_t platelet_radius(o.get<size_t>("platelet_radius"));
     size_t stacking(o.get<size_t>("stacking"));
-    size_t modifiers_count_preset(o.get<size_t>("modifiers_count_preset"));
+    //size_t modifiers_count_preset(o.get<size_t>("modifiers_count_preset"));
     size_t tail_length(o.get<size_t>("tail_length"));
     size_t polymerization(o.get<size_t>("polymerization"));
     size_t threads_nx(o.get<size_t>("threads_nx"));
@@ -75,15 +75,16 @@ int main()
 
     size_t charged_count;
     std::string modifier_count_taken_from;
-    if (!modifiers_count_preset)
+
+    try
+      {
+        charged_count = o.get<size_t>("modifiers_count_preset");
+        modifier_count_taken_from = "options";
+      }
+    catch(char const *ex)
       {
         charged_count = md_mods_count * (real_mmt_area * stacking / md_mmt_area);
         modifier_count_taken_from = "CEC";
-      }
-    else
-      {
-        charged_count = modifiers_count_preset;
-        modifier_count_taken_from = "options";
       }
 
     // Compute interlayer based on modifiers size and count

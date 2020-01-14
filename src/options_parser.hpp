@@ -42,7 +42,8 @@ public:
       {
         if (this->options_.find(option_name) == this->options_.end())
           {
-            std::cout << "Request for not existing option!";
+            std::cerr << "OptionParser, request for not existing option: "
+                      << option_name << std::endl;
             throw "Request for not existing option!";
           }
         return T(this->options_[option_name]);

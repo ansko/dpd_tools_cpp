@@ -7,10 +7,10 @@ threads_nz 1
 mmt_real_thickness 8
 
 # Ratio box_size / MMT_size
-planar_expansion_coeff 3
+planar_expansion_coeff 5
 
 # Radius of MMT platelet in beads if isolated algorithm is used
-platelet_radius 50
+platelet_radius 25
 
 # Decreasing MMT bonds for platelets to be denser and push away from each other
 platelet_closing 0.2
@@ -21,8 +21,9 @@ tail_length 5
 # Charge of the modifier head and of MMT substituted atoms
 bead_charge 10
 
-# Number of modifiers (may contradict to CEC and has higher priority)
-modifiers_count_preset 250
+# Number of modifiers, comment next line for the count to be taken
+# from CEC calculations
+modifiers_count_preset 100
 
 # Number of platelets in the stack
 stacking 2
@@ -31,7 +32,7 @@ stacking 2
 polymerization 10
 
 # Interlayer space in the MMT stack in Angstroms
-real_interlayer 5
+real_interlayer 3
 
 # DPD density
 dpd_rho 3
